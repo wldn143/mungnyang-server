@@ -11,11 +11,14 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         isEmail: true,
       },
-      primaryKey: true,
     },
     password: {
       type: DataTypes.STRING(20),
       allowNull: false,
+    },
+    pet_id: {
+      type: DataTypes.STRING(10),
+      allowNull: true,
     },
   });
   return user;
