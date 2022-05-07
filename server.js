@@ -7,6 +7,42 @@ app.use(express.json());
 app.use(cors());
 app.use("/ocr-upload", express.static("ocr-upload"));
 
+app.get("/health_problem", (req, res) => {
+  models.Health_problem.findAll()
+    .then((result) => {
+      console.log("HEALTH_PROBLEMS:", result);
+      res.send({
+        health_problems: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("에러 발생");
+    });
+});
+
+app.post("/health_problem", (req, res) => {
+  const body = req.body;
+  const { health } = body;
+  if (!health) {
+    res.send("모든 필드를 입력해주세요");
+  }
+
+  models.Health_problem.create({
+    health,
+  })
+    .then((result) => {
+      console.log("건강고민정보 생성 결과 : ", result);
+      res.send({
+        result,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.send("건강고민정보 업로드에 문제가 발생했습니다");
+    });
+});
+
 app.get("/user", (req, res) => {
   models.User.findAll()
     .then((result) => {
@@ -123,72 +159,28 @@ app.get("/user/:id", (req, res) => {
     });
 });
 
-app.patch("/user/:id", (req, res) => {
-  const body = req.body;
-  // const uu = models.User.findOne((uu) => uu.id === parseInt(req.params.id));
-  // uu.pet_id = req.body.pet_id;
+app.put("/user/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const { name, email, password, pet_id } = req.body;
 
-  // .then((result) => {
-  //   console.log("유저정보 수정 결과 : ", result);
-  //   res.send({
-  //     result,
-  //   });
-  // })
-  // .catch((error) => {
-  //   console.error(error);
-  //   res.send("유저정보 수정에 문제가 발생했습니다");
-  // });
-  //res.json(uu);
-  res.send("put your changed data here");
+  return models.User.findOne({
+    where: {
+      id: id,
+    },
+  }).then((result) => {
+    const { name, email, password, pet_id } = req.body;
+    return result
+      .update({ name, email, password, pet_id })
+      .then(() => res.send(result))
+      .catch((err) => {
+        console.log(
+          "유저 정보 수정에 에러가 발생했습니다.",
+          JSON.stringify(err)
+        );
+        res.status(400).send(err);
+      });
+  });
 });
-
-// app.patch("/user/:id", (req, res) => {
-//   models.User.updateOne(
-//     {
-//       id: req.params.id,
-//     },
-//     { $set: req.body }
-//   )
-//     .then((result) => {
-//       console.log("유저정보 수정 결과 : ", result);
-//       res.send({
-//         result,
-//       });
-//     })
-//     .catch((error) => {
-//       console.error(error);
-//       res.send("유저정보 수정에 문제가 발생했습니다");
-//     });
-// });
-// app.patch("/user/:id", (req, res) => {
-//   const params = req.params;
-//   var values = {
-//     name: "name",
-//     email: "email",
-//     password: "password",
-//     pet_id: 1,
-//   };
-//   const { id } = params;
-//   var condition = {
-//     where: {
-//       id: id,
-//     },
-//   };
-//   options = { multi: ture };
-
-//   models.User.update(values, condition, options)
-
-//     .then((result) => {
-//       console.log("유저정보 수정 결과 : ", result);
-//       res.send({
-//         result,
-//       });
-//     })
-//     .catch((error) => {
-//       console.error(error);
-//       res.send("유저정보 수정에 문제가 발생했습니다");
-//     });
-// });
 
 app.listen(port, () => {
   console.log("멍냥식탁 서버가 돌아가고 있습니다.");
