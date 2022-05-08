@@ -1,6 +1,11 @@
 module.exports = function (sequelize, DataTypes) {
   const user = sequelize.define("User", {
     //테이블 이름임
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      primaryKey: true,
+    },
     name: {
       type: DataTypes.STRING(20),
       allowNull: false,
@@ -17,8 +22,12 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false,
     },
     pet_id: {
-      type: DataTypes.STRING(10),
+      type: DataTypes.INTEGER,
       allowNull: true,
+      references: {
+        model: "Pet",
+        key: "pet_id",
+      },
     },
   });
   return user;

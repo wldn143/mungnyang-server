@@ -1,6 +1,11 @@
 module.exports = function (sequelize, DataTypes) {
   const pet = sequelize.define("Pet", {
     //테이블 이름임
+    pet_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      primaryKey: true,
+    },
     cat_or_dog: {
       type: DataTypes.STRING(10),
       allowNull: false,

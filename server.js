@@ -7,6 +7,20 @@ app.use(express.json());
 app.use(cors());
 app.use("/ocr-upload", express.static("ocr-upload"));
 
+app.get("/pet_health", (req, res) => {
+  models.Pet_health.findAll()
+    .then((result) => {
+      console.log("Pet_Health:", result);
+      res.send({
+        health_problems: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("에러 발생");
+    });
+});
+
 app.get("/health_problem", (req, res) => {
   models.Health_problem.findAll()
     .then((result) => {
