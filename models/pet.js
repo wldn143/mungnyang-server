@@ -3,8 +3,9 @@ module.exports = function (sequelize, DataTypes) {
     //테이블 이름임
     pet_id: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
       primaryKey: true,
+      autoIncrement: true,
     },
     cat_or_dog: {
       type: DataTypes.STRING(10),

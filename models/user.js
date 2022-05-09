@@ -3,8 +3,9 @@ module.exports = function (sequelize, DataTypes) {
     //테이블 이름임
     user_id: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
       primaryKey: true,
+      autoIncrement: true,
     },
     name: {
       type: DataTypes.STRING(20),
@@ -24,10 +25,6 @@ module.exports = function (sequelize, DataTypes) {
     pet_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
-      references: {
-        model: "Pet",
-        key: "pet_id",
-      },
     },
   });
   return user;

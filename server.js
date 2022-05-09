@@ -21,6 +21,29 @@ app.get("/pet_health", (req, res) => {
     });
 });
 
+app.post("/pet_health", (req, res) => {
+  const body = req.body;
+  const { pet_id, health_id } = body;
+  if (!pet_id || !health_id) {
+    res.send("모든 필드를 입력해주세요");
+  }
+
+  models.Pet_health.create({
+    pet_id,
+    health_id,
+  })
+    .then((result) => {
+      console.log("반려동물 건강정보 생성 결과 : ", result);
+      res.send({
+        result,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.send("반려동물 건강정보 업로드에 문제가 발생했습니다");
+    });
+});
+
 app.get("/health_problem", (req, res) => {
   models.Health_problem.findAll()
     .then((result) => {
