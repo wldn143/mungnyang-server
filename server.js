@@ -7,6 +7,17 @@ app.use(express.json());
 app.use(cors());
 app.use("/ocr-upload", express.static("ocr-upload"));
 
+const spawn = require("child_process").spawn;
+const result = spawn("python", ["ocr/ocr.py"]);
+// 3. stdout의 'data'이벤트리스너로 실행결과를 받는다.
+result.stdout.on("data", function (data) {
+  console.log(data.toString());
+});
+// 4. 에러 발생 시, stderr의 'data'이벤트리스너로 실행결과를 받는다.
+result.stderr.on("data", function (data) {
+  console.log(data.toString());
+});
+
 app.get("/pet_health", (req, res) => {
   models.Pet_health.findAll()
     .then((result) => {
