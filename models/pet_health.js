@@ -3,7 +3,7 @@ module.exports = function (sequelize, DataTypes) {
     //테이블 이름임
     pet_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
 
     health_id: {

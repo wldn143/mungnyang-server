@@ -12,7 +12,7 @@ app.get("/pet_health", (req, res) => {
     .then((result) => {
       console.log("Pet_Health:", result);
       res.send({
-        health_problems: result,
+        pet_health: result,
       });
     })
     .catch((error) => {
