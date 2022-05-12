@@ -2,10 +2,78 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const models = require("./models");
+const multer = require("multer");
+
+//upload파일에 file.originalname으로 이미지를 저장할 예정
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, "uploads/");
+    },
+    filename: function (req, file, cb) {
+      cb(null, file.originalname);
+    },
+  }),
+});
 const port = 8080;
 app.use(express.json());
 app.use(cors());
-app.use("/ocr-upload", express.static("ocr-upload"));
+
+//이미지를 입력했던 경로로 보여주는 세팅
+app.use("/uploads", express.static("uploads"));
+
+//ocrimg 업로드하면 이 주소로 저장된 imageUrl 보여줌
+app.get("/ocrimg", (req, res) => {
+  models.Ocr.findAll()
+    .then((result) => {
+      console.log("ocrurl:", result);
+      res.send({
+        ocrurl: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("에러 발생");
+    });
+});
+
+//ocrimg 업로드하면 이 주소로 imageUrl 저장
+app.post("/ocrimg", (req, res) => {
+  const body = req.body;
+  const {
+    meatImageUrl,
+    fruitImageUrl,
+    fishImageUrl,
+    vegeImageUrl,
+    nutImageUrl,
+  } = body;
+  models.Ocr.create({
+    meatImageUrl,
+    fruitImageUrl,
+    fishImageUrl,
+    vegeImageUrl,
+    nutImageUrl,
+  })
+    .then((result) => {
+      console.log("상품 생성 결과 : ", result);
+      res.send({
+        result,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(400).send("상품 업로드에 문제가 발생했습니다");
+    });
+});
+
+//image라는 이름의 파일이 들어왔을때 처리해주는 로직
+//multer를 사용하게되었을 때 file정보 중 path를 post
+app.post("/image", upload.single("image"), (req, res) => {
+  const file = req.file;
+  res.send({
+    imageUrl: file.path,
+  });
+});
 
 app.get("/pet_health", (req, res) => {
   models.Pet_health.findAll()
