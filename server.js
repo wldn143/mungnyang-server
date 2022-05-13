@@ -41,6 +41,7 @@ app.get("/ocrimg", (req, res) => {
 app.post("/ocrimg", (req, res) => {
   const body = req.body;
   const {
+    pet_id,
     meatImageUrl,
     fruitImageUrl,
     fishImageUrl,
@@ -48,6 +49,7 @@ app.post("/ocrimg", (req, res) => {
     nutImageUrl,
   } = body;
   models.Ocr.create({
+    pet_id,
     meatImageUrl,
     fruitImageUrl,
     fishImageUrl,

@@ -1,7 +1,10 @@
 module.exports = function (sequelize, DataTypes) {
   const ocr_img = sequelize.define("Ocr", {
     //테이블 이름임
-
+    pet_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     meatImageUrl: {
       allowNull: true,
       type: DataTypes.STRING(30),
