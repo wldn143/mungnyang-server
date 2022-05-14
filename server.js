@@ -2,20 +2,237 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const models = require("./models");
+const multer = require("multer");
+const { json } = require("express/lib/response");
+const spawn = require("child_process").spawn;
+
+var duck, lamb, beef, chicken, turckey, pork;
+var w_melon, melon, pear, mandarine, orange, apple, banana, guava;
+var bean, peanut, rice, flour;
+var crab, shrimp, mackerel, sardine, anchovy, cod, salmon, tuna;
+var carrot,
+  corn,
+  potato,
+  s_potato,
+  pumpkin,
+  broccoli,
+  cabbage,
+  pea,
+  tomato,
+  seaweed;
+
+//upload파일에 file.originalname으로 이미지를 저장할 예정
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, "uploads/");
+    },
+    filename: function (req, file, cb) {
+      cb(null, file.originalname);
+    },
+  }),
+});
 const port = 8080;
 app.use(express.json());
 app.use(cors());
-app.use("/ocr-upload", express.static("ocr-upload"));
 
-const spawn = require("child_process").spawn;
-const result = spawn("python", ["ocr/ocr.py"]);
-// 3. stdout의 'data'이벤트리스너로 실행결과를 받는다.
-result.stdout.on("data", function (data) {
-  console.log(data.toString());
+//이미지를 입력했던 경로로 보여주는 세팅
+app.use("/uploads", express.static("uploads"));
+
+//ocrimg 업로드하면 이 주소로 저장된 imageUrl 보여줌
+app.get("/ocrimg", (req, res) => {
+  models.Ocr.findAll()
+    .then((result) => {
+      console.log("ocrurl:", result);
+      res.send({
+        ocrurl: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("에러 발생");
+    });
 });
-// 4. 에러 발생 시, stderr의 'data'이벤트리스너로 실행결과를 받는다.
-result.stderr.on("data", function (data) {
-  console.log(data.toString());
+
+//ocrimg 업로드하면 이 주소로 imageUrl 저장
+app.post("/ocrimg", (req, res) => {
+  const body = req.body;
+  const {
+    pet_id,
+    meatImageUrl,
+    fruitImageUrl,
+    fishImageUrl,
+    vegeImageUrl,
+    nutImageUrl,
+  } = body;
+  const result_meat = spawn("python", ["ocr/ocr.py", meatImageUrl]);
+  result_meat.toString().replace(/\r\n/gi, "\\r\\n");
+  const result_fruit = spawn("python", ["ocr/ocr.py", fruitImageUrl]);
+  result_fruit.toString().replace(/\r\n/gi, "\\r\\n");
+  const result_seafood = spawn("python", ["ocr/ocr.py", fishImageUrl]);
+  result_seafood.toString().replace(/\r\n/gi, "\\r\\n");
+  const result_vege = spawn("python", ["ocr/ocr.py", vegeImageUrl]);
+  result_vege.toString().replace(/\r\n/gi, "\\r\\n");
+  const result_nuts = spawn("python", ["ocr/ocr.py", nutImageUrl]);
+  result_nuts.toString().replace(/\r\n/gi, "\\r\\n");
+
+  result_meat.stdout.on("data", function (data) {
+    obj = data.toString().replace(/\r\n/gi, "\\r\\n");
+    jsondata = JSON.parse(obj);
+    console.log(jsondata[1]);
+    duck = jsondata[0];
+    lamb = jsondata[1];
+    beef = jsondata[2];
+    chicken = jsondata[3];
+    turckey = jsondata[4];
+    pork = jsondata[5];
+    models.OCR_result_meat.create({
+      pet_id,
+      duck,
+      lamb,
+      beef,
+      chicken,
+      turckey,
+      pork,
+    });
+  });
+  result_meat.stderr.on("data", function (data) {
+    console.log(data.toString());
+  });
+
+  result_fruit.stdout.on("data", function (data) {
+    obj = data.toString();
+    jsondata = JSON.parse(obj);
+    console.log(jsondata[1]);
+    w_melon = jsondata[0];
+    melon = jsondata[1];
+    pear = jsondata[2];
+    mandarine = jsondata[3];
+    orange = jsondata[4];
+    apple = jsondata[5];
+    banana = jsondata[6];
+    guava = jsondata[7];
+    models.OCR_result_fruit.create({
+      pet_id,
+      w_melon,
+      melon,
+      pear,
+      mandarine,
+      orange,
+      apple,
+      banana,
+      guava,
+    });
+  });
+  result_fruit.stderr.on("data", function (data) {
+    console.log(data.toString());
+  });
+
+  result_seafood.stdout.on("data", function (data) {
+    obj = data.toString();
+    jsondata = JSON.parse(obj);
+    console.log(jsondata[1]);
+    crab = jsondata[0];
+    shrimp = jsondata[1];
+    mackerel = jsondata[2];
+    sardine = jsondata[3];
+    anchovy = jsondata[4];
+    cod = jsondata[5];
+    salmon = jsondata[6];
+    tuna = jsondata[7];
+    models.OCR_result_seafood.create({
+      pet_id,
+      crab,
+      shrimp,
+      mackerel,
+      sardine,
+      anchovy,
+      cod,
+      salmon,
+      tuna,
+    });
+  });
+  result_seafood.stderr.on("data", function (data) {
+    console.log(data.toString());
+  });
+
+  result_nuts.stdout.on("data", function (data) {
+    obj = data.toString();
+    jsondata = JSON.parse(obj);
+    console.log(jsondata[1]);
+    bean = jsondata[0];
+    peanut = jsondata[1];
+    rice = jsondata[2];
+    flour = jsondata[3];
+    models.OCR_result_nuts.create({
+      pet_id,
+      bean,
+      peanut,
+      rice,
+      flour,
+    });
+  });
+  result_nuts.stderr.on("data", function (data) {
+    console.log(data.toString());
+  });
+
+  result_vege.stdout.on("data", function (data) {
+    obj = data.toString();
+    jsondata = JSON.parse(obj);
+    carrot = jsondata[0];
+    corn = jsondata[1];
+    potato = jsondata[2];
+    s_potato = jsondata[3];
+    pumpkin = jsondata[4];
+    broccoli = jsondata[5];
+    cabbage = jsondata[6];
+    pea = jsondata[7];
+    tomato = jsondata[8];
+    seaweed = jsondata[9];
+    models.OCR_result_vege.create({
+      pet_id,
+      carrot,
+      corn,
+      potato,
+      s_potato,
+      pumpkin,
+      broccoli,
+      cabbage,
+      pea,
+      tomato,
+      seaweed,
+    });
+  });
+  result_vege.stderr.on("data", function (data) {
+    console.log(data.toString());
+  });
+
+  models.Ocr.create({
+    meatImageUrl,
+    fruitImageUrl,
+    fishImageUrl,
+    vegeImageUrl,
+    nutImageUrl,
+  })
+    .then((result) => {
+      console.log("상품 생성 결과 : ", result);
+      res.send({
+        result,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(400).send("상품 업로드에 문제가 발생했습니다");
+    });
+});
+
+//image라는 이름의 파일이 들어왔을때 처리해주는 로직
+//multer를 사용하게되었을 때 file정보 중 path를 post
+app.post("/image", upload.single("image"), (req, res) => {
+  const file = req.file;
+  res.send({
+    imageUrl: file.path,
+  });
 });
 
 app.get("/pet_health", (req, res) => {

@@ -19,16 +19,9 @@ import requests
 import json
 from symspellpy import SymSpell, Verbosity
 from hangul_utils import split_syllable_char, split_syllables, join_jamos
+import sys
 #from flask import Flask
 #app = Flask(__name__)
-
-
-#es = Elasticsearch('localhost:9200')
-
-#es = Elasticsearch(
-#        ['HOST'],
-#        http_auth = ('USER', 'PASSWORD')
-#        )
 
 def convert_image(image_path):
     img = cv2.imread(image_path)
@@ -48,10 +41,11 @@ def feed_image_to_tess(threshold_img):
     return details
 
 def extract_words(details):
-    parse_text = []
+    parse_text = ""
+    parse_text+="{"
     word_list = []
     last_word = ''
-
+    i=0
     for word in details['text']:
         if word != '':
             word_list.append(word)
@@ -62,30 +56,31 @@ def extract_words(details):
 
             match = re.match(r"([가-힣ㄱ-ㅎㅏ-ㅣ]+)", parsed, re.I)
             match2 = re.findall(r'([0-9]+)', parsed, re.I)
-            print(match2)
+            #print(match2)
             if match:
-                dictionary_path = '//forSpellCheck.txt'
+                dictionary_path = 'ocr/forSpellCheck.txt'
                 vocab = pd.read_csv(dictionary_path, sep=" ", names=["term", "count"])
                 vocab.term = vocab.term.map(split_syllables)
-                vocab.to_csv("/ocr/forSpellCheck1.txt", sep=" ", header=None, index=None)
+                vocab.to_csv("ocr/forSpellCheck1.txt", sep=" ", header=None, index=None)
                 vocab.head()
 
                 sym_spell = SymSpell(max_dictionary_edit_distance=3)
-                dictionary_path1 = "/ocr/forSpellCheck1.txt"
+                dictionary_path1 = "ocr/forSpellCheck1.txt"
                 sym_spell.load_dictionary(dictionary_path1, 0, 1)
 
                 term = match.group(1)
                 term = split_syllables(term)
-                print(term)
+                #print(term)
 
                 suggestions = sym_spell.lookup(term, Verbosity.ALL, max_edit_distance=2)
                 for sugg in suggestions:
                     items = join_jamos(sugg.term)
                     break
-                parse_text.append(items+" "+match2[0])
-
+                if(i!=0): parse_text+=", "
+                parse_text+='"'+str(i)+'": '+match2[0]
+                i+=1
                 word_list = []
-
+    parse_text+="}"
     return parse_text
 
 def highlight_with_rectangle(details, threshold_img):
@@ -106,21 +101,23 @@ def display_image(threshold_img):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-def main():
+def main(img_path):
 
-    image_path = '/Users/heeyeon/Desktop/graduate_/capstone/allergy_test2.jpg'
-    threshold_img = convert_image(image_path)
-
-    display_image(threshold_img)
+    threshold_img = convert_image(img_path)
 
     details = feed_image_to_tess(threshold_img)
     parse_text = extract_words(details)
-    print(details['text'])
-    print(f"Parsed text: {parse_text}")
+    #print(details['text'])
+    
+    #이게 전달됨
+    #print(f"Parsed text: {parse_text}")
+    print(parse_text)
 
 
-    save = pd.DataFrame(parse_text)
-    save.to_csv("/ocr/saved_text2.csv", header=False, index=False)
+    #save = pd.DataFrame(parse_text)
+    #save.to_csv("ocr/justtest.csv", header=False, index=False)
 
     # highlight_with_rectangle(details, threshold_img)
 
+if __name__ == "__main__":
+	main(sys.argv[1])
