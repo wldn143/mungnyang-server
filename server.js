@@ -208,6 +208,7 @@ app.post("/ocrimg", (req, res) => {
   });
 
   models.Ocr.create({
+    pet_id,
     meatImageUrl,
     fruitImageUrl,
     fishImageUrl,
