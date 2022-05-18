@@ -17,11 +17,19 @@ import pytesseract
 import regex as re
 import requests
 import json
+import sys
 from symspellpy import SymSpell, Verbosity
 from hangul_utils import split_syllable_char, split_syllables, join_jamos
-import sys
 #from flask import Flask
 #app = Flask(__name__)
+
+
+#es = Elasticsearch('localhost:9200')
+
+#es = Elasticsearch(
+#        ['HOST'],
+#        http_auth = ('USER', 'PASSWORD')
+#        )
 
 def convert_image(image_path):
     img = cv2.imread(image_path)
@@ -53,30 +61,9 @@ def extract_words(details):
         #print(word)
         if (last_word != '' and word == '') or (word == details['text'][-1]):
             parsed = ''.join(word_list)
-
-            match = re.match(r"([가-힣ㄱ-ㅎㅏ-ㅣ]+)", parsed, re.I)
             match2 = re.findall(r'([0-9]+)', parsed, re.I)
-            #print(match2)
-            if match:
-                dictionary_path = 'ocr/forSpellCheck.txt'
-                vocab = pd.read_csv(dictionary_path, sep=" ", names=["term", "count"])
-                vocab.term = vocab.term.map(split_syllables)
-                vocab.to_csv("ocr/forSpellCheck1.txt", sep=" ", header=None, index=None)
-                vocab.head()
-
-                sym_spell = SymSpell(max_dictionary_edit_distance=3)
-                dictionary_path1 = "ocr/forSpellCheck1.txt"
-                sym_spell.load_dictionary(dictionary_path1, 0, 1)
-
-                term = match.group(1)
-                term = split_syllables(term)
-                #print(term)
-
-                suggestions = sym_spell.lookup(term, Verbosity.ALL, max_edit_distance=2)
-                for sugg in suggestions:
-                    items = join_jamos(sugg.term)
-                    break
-                if(i!=0): parse_text+=", "
+            if match2:
+                if (i != 0): parse_text += ", "
                 parse_text+='"'+str(i)+'": '+match2[0]
                 i+=1
                 word_list = []
@@ -101,6 +88,7 @@ def display_image(threshold_img):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+
 def main(img_path):
 
     threshold_img = convert_image(img_path)
@@ -120,4 +108,4 @@ def main(img_path):
     # highlight_with_rectangle(details, threshold_img)
 
 if __name__ == "__main__":
-	main(sys.argv[1])
+    main(sys.argv[1])
