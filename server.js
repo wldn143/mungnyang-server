@@ -53,7 +53,75 @@ app.get("/ocrimg", (req, res) => {
       res.send("에러 발생");
     });
 });
+app.get("/OCR_result_meat", (req, res) => {
+  models.OCR_result_meat.findAll()
+    .then((result) => {
+      console.log("OCR_result_meat:", result);
+      res.send({
+        OCR_result_meat: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("에러 발생");
+    });
+});
 
+app.get("/OCR_result_fruit", (req, res) => {
+  models.OCR_result_fruit.findAll()
+    .then((result) => {
+      console.log("OCR_result_fruit:", result);
+      res.send({
+        OCR_result_fruit: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("에러 발생");
+    });
+});
+
+app.get("/OCR_result_seafood", (req, res) => {
+  models.OCR_result_seafood.findAll()
+    .then((result) => {
+      console.log("OCR_result_seafood:", result);
+      res.send({
+        OCR_result_seafood: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("에러 발생");
+    });
+});
+
+app.get("/OCR_result_nuts", (req, res) => {
+  models.OCR_result_nuts.findAll()
+    .then((result) => {
+      console.log("OCR_result_nuts:", result);
+      res.send({
+        OCR_result_nuts: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("에러 발생");
+    });
+});
+
+app.get("/OCR_result_vege", (req, res) => {
+  models.OCR_result_vege.findAll()
+    .then((result) => {
+      console.log("OCR_result_vege:", result);
+      res.send({
+        OCR_result_vege: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("에러 발생");
+    });
+});
 //ocrimg 업로드하면 이 주소로 imageUrl 저장
 app.post("/ocrimg", (req, res) => {
   const body = req.body;
