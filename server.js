@@ -109,6 +109,169 @@ app.post("/food", (req, res) => {
       res.send("음식이름정보 업로드에 문제가 발생했습니다");
     });
 });
+
+app.post("/OCR_result_vege", (req, res) => {
+  const body = req.body;
+  const {
+    pet_id,
+    carrot,
+    corn,
+    potato,
+    s_potato,
+    pumpkin,
+    broccoli,
+    cabbage,
+    pea,
+    tomato,
+    seaweed,
+  } = body;
+
+  models.OCR_result_vege.create({
+    pet_id,
+    carrot,
+    corn,
+    potato,
+    s_potato,
+    pumpkin,
+    broccoli,
+    cabbage,
+    pea,
+    tomato,
+    seaweed,
+  })
+    .then((result) => {
+      console.log("vegeOcrResult 생성 결과 : ", result);
+      res.send({
+        result,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.send("vegeOcrResult 업로드에 문제가 발생했습니다");
+    });
+});
+
+app.post("/OCR_result_nuts", (req, res) => {
+  const body = req.body;
+  const { pet_id, bean, peanut, rice, flour } = body;
+
+  models.OCR_result_nuts.create({
+    pet_id,
+    bean,
+    peanut,
+    rice,
+    flour,
+  })
+    .then((result) => {
+      console.log("nutsOcrResult 생성 결과 : ", result);
+      res.send({
+        result,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.send("nutsOcrResult 업로드에 문제가 발생했습니다");
+    });
+});
+
+app.post("/OCR_result_seafood", (req, res) => {
+  const body = req.body;
+  const {
+    pet_id,
+    crab,
+    shrimp,
+    mackerel,
+    sardine,
+    anchovy,
+    cod,
+    salmon,
+    tuna,
+  } = body;
+
+  models.OCR_result_seafood.create({
+    pet_id,
+    crab,
+    shrimp,
+    mackerel,
+    sardine,
+    anchovy,
+    cod,
+    salmon,
+    tuna,
+  })
+    .then((result) => {
+      console.log("seafoodOcrResult 생성 결과 : ", result);
+      res.send({
+        result,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.send("seafoodOcrResult 업로드에 문제가 발생했습니다");
+    });
+});
+
+app.post("/OCR_result_fruit", (req, res) => {
+  const body = req.body;
+  const {
+    pet_id,
+    w_melon,
+    melon,
+    pear,
+    mandarine,
+    orange,
+    apple,
+    banana,
+    guava,
+  } = body;
+
+  models.OCR_result_fruit.create({
+    pet_id,
+    w_melon,
+    melon,
+    pear,
+    mandarine,
+    orange,
+    apple,
+    banana,
+    guava,
+  })
+    .then((result) => {
+      console.log("fruitsOcrResult 생성 결과 : ", result);
+      res.send({
+        result,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.send("fruitsOcrResult 업로드에 문제가 발생했습니다");
+    });
+});
+
+app.post("/OCR_result_meat", (req, res) => {
+  const body = req.body;
+  const { pet_id, duck, lamb, beef, chicken, turckey, pork } = body;
+
+  models.OCR_result_meat.create({
+    pet_id,
+    duck,
+    lamb,
+    beef,
+    chicken,
+    turckey,
+    pork,
+  })
+    .then((result) => {
+      console.log("meatOcrResult : ", result);
+      res.send({
+        result,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.send("meatOcrResult 업로드에 문제가 발생했습니다");
+    });
+});
 //ocrimg 업로드하면 이 주소로 저장된 imageUrl 보여줌
 app.get("/ocrimg", (req, res) => {
   models.Ocr.findAll()
