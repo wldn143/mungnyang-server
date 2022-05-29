@@ -39,6 +39,76 @@ app.use(cors());
 //이미지를 입력했던 경로로 보여주는 세팅
 app.use("/uploads", express.static("uploads"));
 
+//각 pet_id 별 주의해야할 알러지 유발 음식 담는 table
+app.get("/allergyfood", (req, res) => {
+  models.allergy_food
+    .findAll()
+    .then((result) => {
+      console.log("allergy_food:", result);
+      res.send({
+        allergy_food: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("에러 발생");
+    });
+});
+
+app.post("/allergyfood", (req, res) => {
+  const body = req.body;
+  const { pet_id, allergy_food_id } = body;
+
+  models.allergy_food
+    .create({
+      pet_id,
+      allergy_food_id,
+    })
+    .then((result) => {
+      console.log("알레르기 유발 음식정보 생성 결과 : ", result);
+      res.send({
+        result,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.send("알레르기 음식 업로드에 문제가 발생했습니다");
+    });
+});
+
+app.get("/food", (req, res) => {
+  models.Food.findAll()
+    .then((result) => {
+      console.log("Food:", result);
+      res.send({
+        foods: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("에러 발생");
+    });
+});
+
+app.post("/food", (req, res) => {
+  const body = req.body;
+  const { foodInKor, foodInEng } = body;
+
+  models.Food.create({
+    foodInKor,
+    foodInEng,
+  })
+    .then((result) => {
+      console.log("음식이름정보 생성 결과 : ", result);
+      res.send({
+        result,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.send("음식이름정보 업로드에 문제가 발생했습니다");
+    });
+});
 //ocrimg 업로드하면 이 주소로 저장된 imageUrl 보여줌
 app.get("/ocrimg", (req, res) => {
   models.Ocr.findAll()
@@ -145,7 +215,7 @@ app.post("/ocrimg", (req, res) => {
   result_nuts.toString().replace(/\r\n/gi, "\\r\\n");
 
   result_meat.stdout.on("data", function (data) {
-    obj = data.toString().replace(/\r\n/gi, "\\r\\n");
+    obj = data.toString();
     jsondata = JSON.parse(obj);
     console.log(jsondata[1]);
     duck = jsondata[0];
@@ -470,6 +540,50 @@ app.post("/pet", (req, res) => {
     .catch((error) => {
       console.error(error);
       res.send("반려동물정보 업로드에 문제가 발생했습니다");
+    });
+});
+app.get("/allergyfood/:pet_id", (req, res) => {
+  const params = req.params;
+  const { pet_id } = params;
+  models.allergy_food
+    .findOne({
+      where: {
+        pet_id: pet_id,
+      },
+    })
+    .then((result) => {
+      console.log("allergy_food: ", result);
+      res.send({
+        allergy_food: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("유저 조회에 에러가 발생했습니다");
+    });
+});
+app.put("/allergyfood/:pet_id", (req, res) => {
+  const pet_id = parseInt(req.params.pet_id);
+  const { allergy_food_id } = req.body;
+
+  return models.allergy_food
+    .findOne({
+      where: {
+        pet_id: pet_id,
+      },
+    })
+    .then((result) => {
+      const { allergy_food_id } = req.body;
+      return result
+        .update({ allergy_food_id })
+        .then(() => res.send(result))
+        .catch((err) => {
+          console.log(
+            "알러지 유발 음식 정보 수정에 에러가 발생했습니다.",
+            JSON.stringify(err)
+          );
+          res.status(400).send(err);
+        });
     });
 });
 
