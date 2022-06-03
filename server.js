@@ -5,6 +5,12 @@ const models = require("./models");
 const multer = require("multer");
 const { json } = require("express/lib/response");
 const spawn = require("child_process").spawn;
+const xlsx = require("xlsx");
+
+//엑셀파일 가져오기
+const recipes = xlsx.readFile("./excels/recipes_dp.xlsx");
+const ingredients = xlsx.readFile("./excels/ingredient_DB.xlsx");
+const matching = xlsx.readFile("./excels/matching.xlsx");
 
 var duck, lamb, beef, chicken, turckey, pork;
 var w_melon, melon, pear, mandarine, orange, apple, banana, guava;
