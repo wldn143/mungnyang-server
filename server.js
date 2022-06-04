@@ -5,12 +5,11 @@ const models = require("./models");
 const multer = require("multer");
 const { json } = require("express/lib/response");
 const spawn = require("child_process").spawn;
-const xlsx = require("xlsx");
 
 //엑셀파일 가져오기
-const recipes = xlsx.readFile("./excels/recipes_dp.xlsx");
-const ingredients = xlsx.readFile("./excels/ingredient_DB.xlsx");
-const matching = xlsx.readFile("./excels/matching.xlsx");
+//const recipes = xlsx.readFile("./excels/recipes_dp.xlsx");
+//const ingredients = xlsx.readFile("./excels/ingredient_DB.xlsx");
+//const matching = xlsx.readFile("./excels/matching.xlsx");
 
 var duck, lamb, beef, chicken, turckey, pork;
 var w_melon, melon, pear, mandarine, orange, apple, banana, guava;
@@ -67,6 +66,21 @@ app.get("/recipe", (req, res) => {
       console.log("recipe:", result);
       res.send({
         recipe: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("에러 발생");
+    });
+});
+
+app.get("/ingredient_DB", (req, res) => {
+  models.ingredient_DB
+    .findAll()
+    .then((result) => {
+      console.log("ingredient_DB:", result);
+      res.send({
+        ingredient_DB: result,
       });
     })
     .catch((error) => {
@@ -831,6 +845,7 @@ app.put("/user/:id", (req, res) => {
 
 app.listen(port, () => {
   console.log("멍냥식탁 서버가 돌아가고 있습니다.");
+
   models.sequelize
     .sync()
     .then(() => {
