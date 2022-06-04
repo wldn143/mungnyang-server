@@ -45,6 +45,36 @@ app.use(cors());
 //이미지를 입력했던 경로로 보여주는 세팅
 app.use("/uploads", express.static("uploads"));
 
+app.get("/matching", (req, res) => {
+  models.matching
+    .findAll()
+    .then((result) => {
+      console.log("matching:", result);
+      res.send({
+        matching: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("에러 발생");
+    });
+});
+
+app.get("/recipe", (req, res) => {
+  models.recipes_dp
+    .findAll()
+    .then((result) => {
+      console.log("recipe:", result);
+      res.send({
+        recipe: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("에러 발생");
+    });
+});
+
 //각 pet_id 별 주의해야할 알러지 유발 음식 담는 table
 app.get("/allergyfood", (req, res) => {
   models.allergy_food
