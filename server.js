@@ -44,6 +44,27 @@ app.use(cors());
 //이미지를 입력했던 경로로 보여주는 세팅
 app.use("/uploads", express.static("uploads"));
 
+app.get("/recipe/:id", (req, res) => {
+  const params = req.params;
+  const { id } = params;
+  models.recipes_dp
+    .findOne({
+      where: {
+        indexNO: id,
+      },
+    })
+    .then((result) => {
+      console.log("recipe: ", result);
+      res.send({
+        recipe: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("레시피 조회에 에러가 발생했습니다");
+    });
+});
+
 app.get("/matching", (req, res) => {
   models.matching
     .findAll()
@@ -159,7 +180,48 @@ app.post("/food", (req, res) => {
       res.send("음식이름정보 업로드에 문제가 발생했습니다");
     });
 });
+app.get("/food/:id", (req, res) => {
+  const params = req.params;
+  const { id } = params;
+  models.Food.findOne({
+    where: {
+      id: id,
+    },
+  })
+    .then((result) => {
+      console.log("Food: ", result);
+      res.send({
+        user: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("음식 조회에 에러가 발생했습니다");
+    });
+});
 
+app.put("/food/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const { foodInKor, foodInEng, ingredient } = req.body;
+
+  return models.Food.findOne({
+    where: {
+      id: id,
+    },
+  }).then((result) => {
+    const { foodInKor, foodInEng, ingredient } = req.body;
+    return result
+      .update({ foodInKor, foodInEng, ingredient })
+      .then(() => res.send(result))
+      .catch((err) => {
+        console.log(
+          "음식 정보 수정에 에러가 발생했습니다.",
+          JSON.stringify(err)
+        );
+        res.status(400).send(err);
+      });
+  });
+});
 app.post("/OCR_result_vege", (req, res) => {
   const body = req.body;
   const {

@@ -9,6 +9,10 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING(40),
       allowNull: false,
     },
+    ingredient: {
+      type: DataTypes.STRING(30),
+      allowNull: true,
+    },
   });
   return Food;
 };
