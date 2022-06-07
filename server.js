@@ -670,6 +670,95 @@ app.post("/pet_health", (req, res) => {
     res.send("모든 필드를 입력해주세요");
   }
 
+  var RER;
+  var DER;
+  var oneMeal;
+
+  models.Pet.findOne({
+    where: {
+      pet_id: pet_id,
+    },
+  })
+    .then((result) => {
+      if (!result) return res.status(404).json({ error: "No Pet" });
+
+      console.log(result);
+
+      var cat_or_dog = result.get("cat_or_dog");
+      var pet_age = result.get("pet_age");
+      var pet_neuter = result.get("pet_neuter");
+      var pet_weight = result.get("pet_weight");
+      var pet_size = result.get("pet_size");
+
+      //기초대사량 RER 계산
+      if (pet_weight >= 2 && pet_weight <= 20) {
+        RER = 30 * pet_weight + 70;
+      } else {
+        RER = 70 * (RER ^ 0.75);
+      }
+
+      //일일대사량 계산
+      var coeffi;
+      var isChild = false;
+      if (cat_or_dog == "cat") {
+        //고양이
+        if (pet_age < 2) {
+          isChild = true;
+          coeffi = 2;
+        } //자묘
+        else {
+          //성묘
+          if (health_id.includes(5)) coeffi = 1; //비만
+          else if (pet_neuter == "yes") coeffi = 1.2; //중성화함
+          else coeffi = 1.4; //중성화안함
+        }
+      } else {
+        //강아지
+        if (pet_size == "small" || pet_size == "medium") {
+          //소, 중형견
+          if (pet_age < 1) {
+            isChild = true;
+            coeffi = 2;
+          } //자견
+          else if (pet_age >= 1) {
+            //성견
+            if (health_id.includes(5)) coeffi = 1; //비만
+            else if (pet_neuter == "yes") coeffi = 1.6; //중성화함
+            else coeffi = 1.8; //중성화안함
+          }
+        } else {
+          //대형견
+          if (pet_age < 2) {
+            isChild = true;
+            coeffi = 2;
+          } //자견
+          else if (pet_age >= 2) {
+            //성견
+            if (health_id.includes(5)) coeffi = 1; //비만
+            else if (pet_neuter == "yes") coeffi = 1.6; //중성화함
+            else coeffi = 1.8; //중성화안함
+          }
+        }
+      }
+
+      //DER 계산
+      DER = RER * coeffi;
+
+      //한 끼 계산
+      if (isChild) oneMeal = DER / 3;
+      else oneMeal = DER / 2;
+    })
+    .then(() => {
+      models.Pet_RER.create({
+        pet_id: pet_id,
+        RER: RER,
+        DER: DER,
+        meal_DER: oneMeal,
+      }).then((result2) => {
+        console.log("칼로리 계산 결과: ", result2);
+      });
+    });
+
   models.Pet_health.create({
     pet_id,
     health_id,
@@ -797,6 +886,7 @@ app.post("/pet", (req, res) => {
   ) {
     res.send("모든 필드를 입력해주세요");
   }
+
   models.Pet.create({
     cat_or_dog,
     pet_name,
