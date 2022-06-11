@@ -4,12 +4,13 @@ const app = express();
 const models = require("./models");
 const multer = require("multer");
 const { json } = require("express/lib/response");
+const { ppid } = require("process");
+//const sequelize = require("sequelize");
 const spawn = require("child_process").spawn;
-
-//엑셀파일 가져오기
-//const recipes = xlsx.readFile("./excels/recipes_dp.xlsx");
-//const ingredients = xlsx.readFile("./excels/ingredient_DB.xlsx");
-//const matching = xlsx.readFile("./excels/matching.xlsx");
+// const Op = sequelize.Op; 엑셀파일 가져오기 const recipes =
+// xlsx.readFile("./excels/recipes_dp.xlsx"); const ingredients =
+// xlsx.readFile("./excels/ingredient_DB.xlsx"); const matching =
+// xlsx.readFile("./excels/matching.xlsx");
 
 var duck, lamb, beef, chicken, turckey, pork;
 var w_melon, melon, pear, mandarine, orange, apple, banana, guava;
@@ -44,9 +45,188 @@ app.use(cors());
 //이미지를 입력했던 경로로 보여주는 세팅
 app.use("/uploads", express.static("uploads"));
 
+let totalKcal = 0;
+var ingredient;
+var ingredient_weight;
+var db_ingredient;
+var energy;
+var tmp;
+var meal_DER;
+var ratio;
+var petId;
+var id;
+//let grams = 0;
+
+async function calcTotal() {
+  return new Promise(function (resolve, reject) {
+    var ret = Number(0);
+    ret = (Number(totalKcal) + Number(tmp)).toFixed(5);
+    resolve(ret);
+  });
+}
+
+async function multiple() {
+  //var totalKcal = 0;
+  return new Promise(function (resolve, reject) {
+    var ret = Number(0);
+    ret = Number(energy) * Number(ingredient_weight);
+    console.log("energy" + energy);
+    console.log("ingredient_weight" + ingredient_weight);
+    resolve(ret);
+  });
+}
+
+async function getEnergy() {
+  return new Promise(function (resolve, reject) {
+    console.log("확인하는중 " + db_ingredient);
+    var ret;
+    models.ingredient_DB
+      .findOne({
+        where: {
+          foodDescription_KOR: db_ingredient,
+        },
+      })
+      .then((result) => {
+        ret = result.get("energy");
+        resolve(ret);
+      });
+  });
+}
+
+async function matching() {
+  return new Promise(function (resolve, reject) {
+    var ret;
+    console.log("matching");
+
+    models.matching
+      .findOne({
+        where: {
+          recipe_ingredient: ingredient,
+        },
+      })
+      .then((result2) => {
+        ret = result2.get("db_ingredient");
+        resolve(ret);
+      });
+  });
+}
+
+async function recipeKcal() {
+  return new Promise(function (resolve, reject) {
+    //var _plus = 0;
+    models.recipes_dp
+      .findOne({
+        where: {
+          indexNO: id,
+        },
+      })
+      .then(async (result) => {
+        //전체 칼로리 계산
+
+        for (var i = 1; i <= 12; i++) {
+          ingredient = result.get("ingredient" + i);
+          ingredient_weight = result.get("ingredient" + i + "_weight");
+          if (ingredient == "undefined" || ingredient_weight == "undefined")
+            return;
+          else if (ingredient == null || ingredient_weight == null)
+            return; //i번째 재료 없는 경우
+          else if (ingredient == "물" || ingredient == "뜨거운 물")
+            return; //물이나 뜨거운물일때 무시
+          else {
+            db_ingredient = await matching();
+            energy = await getEnergy();
+            tmp = await multiple();
+            totalKcal = await calcTotal();
+
+            console.log("nowKcal: " + totalKcal);
+          }
+        }
+      })
+      .then(() => {
+        console.log("totalKcal: " + totalKcal);
+        resolve(totalKcal);
+      });
+  });
+}
+
+async function calcRatio() {
+  return new Promise(function (resolve, reject) {
+    console.log("calcRatio: " + totalKcal);
+    models.Pet_RER.findOne({
+      where: {
+        pet_id: petId,
+      },
+    }).then((result4) => {
+      meal_DER = result4.get("meal_DER");
+      console.log("meal Der: " + meal_DER); //ok
+      ratio = meal_DER / totalKcal;
+      console.log("real ratio: " + ratio); //infinity (total값이 안넘어옴)
+      resolve(ratio);
+      //console.log('meal DER: '+meal_DER);
+    });
+  });
+}
+
+async function showing() {
+  return new Promise(function (resolve, reject) {
+    var ingredient2;
+    var ingredient_weight2;
+    models.recipes_dp
+      .findOne({
+        where: {
+          indexNO: id,
+        },
+      })
+      .then((result) => {
+        for (var i = 1; i <= 12; i++) {
+          ingredient2 = result.get("ingredient" + i);
+          ingredient_weight2 = result.get("ingredient" + i + "_weight");
+
+          //console.log('trying' + ingredient); console.log(ingredient_weight);
+
+          if (ingredient_weight2 == null || ingredient2 == null) continue;
+          else if (
+            ingredient2 == "undefined" ||
+            ingredient_weight2 == "undefined"
+          )
+            continue;
+          else {
+            console.log(
+              "재료" +
+                i +
+                ": " +
+                ingredient2 +
+                " " +
+                Number(ingredient_weight2 * ratio).toFixed(0) +
+                "g"
+            );
+          }
+        }
+      });
+    resolve();
+  });
+}
+
+async function doSomething() {
+  totalKcal = await recipeKcal();
+  ratio = await calcRatio();
+  var ret = await showing();
+}
+
+app.post("/recipe/:id", (req, res) => {
+  const body = req.body;
+  petId = body.pet_id;
+  console.log(petId);
+  const params = req.params;
+  id = params.id;
+
+  const foo = doSomething();
+});
+
 app.get("/recipe/:id", (req, res) => {
   const params = req.params;
-  const { id } = params;
+  id = params.id;
+
   models.recipes_dp
     .findOne({
       where: {
@@ -54,10 +234,9 @@ app.get("/recipe/:id", (req, res) => {
       },
     })
     .then((result) => {
-      console.log("recipe: ", result);
-      res.send({
-        recipe: result,
-      });
+      //console.log("recipe: ", result);
+
+      res.send({ recipe: result });
     })
     .catch((error) => {
       console.log(error);
@@ -70,9 +249,7 @@ app.get("/matching", (req, res) => {
     .findAll()
     .then((result) => {
       console.log("matching:", result);
-      res.send({
-        matching: result,
-      });
+      res.send({ matching: result });
     })
     .catch((error) => {
       console.log(error);
@@ -85,9 +262,7 @@ app.get("/recipe", (req, res) => {
     .findAll()
     .then((result) => {
       console.log("recipe:", result);
-      res.send({
-        recipe: result,
-      });
+      res.send({ recipe: result });
     })
     .catch((error) => {
       console.log(error);
@@ -100,9 +275,7 @@ app.get("/ingredient_DB", (req, res) => {
     .findAll()
     .then((result) => {
       console.log("ingredient_DB:", result);
-      res.send({
-        ingredient_DB: result,
-      });
+      res.send({ ingredient_DB: result });
     })
     .catch((error) => {
       console.log(error);
@@ -116,9 +289,7 @@ app.get("/allergyfood", (req, res) => {
     .findAll()
     .then((result) => {
       console.log("allergy_food:", result);
-      res.send({
-        allergy_food: result,
-      });
+      res.send({ allergy_food: result });
     })
     .catch((error) => {
       console.log(error);
@@ -131,15 +302,10 @@ app.post("/allergyfood", (req, res) => {
   const { pet_id, allergy_food_id } = body;
 
   models.allergy_food
-    .create({
-      pet_id,
-      allergy_food_id,
-    })
+    .create({ pet_id, allergy_food_id })
     .then((result) => {
       console.log("알레르기 유발 음식정보 생성 결과 : ", result);
-      res.send({
-        result,
-      });
+      res.send({ result });
     })
     .catch((error) => {
       console.error(error);
@@ -151,9 +317,7 @@ app.get("/food", (req, res) => {
   models.Food.findAll()
     .then((result) => {
       console.log("Food:", result);
-      res.send({
-        foods: result,
-      });
+      res.send({ foods: result });
     })
     .catch((error) => {
       console.log(error);
@@ -165,15 +329,10 @@ app.post("/food", (req, res) => {
   const body = req.body;
   const { foodInKor, foodInEng } = body;
 
-  models.Food.create({
-    foodInKor,
-    foodInEng,
-  })
+  models.Food.create({ foodInKor, foodInEng })
     .then((result) => {
       console.log("음식이름정보 생성 결과 : ", result);
-      res.send({
-        result,
-      });
+      res.send({ result });
     })
     .catch((error) => {
       console.error(error);
@@ -190,9 +349,7 @@ app.get("/food/:id", (req, res) => {
   })
     .then((result) => {
       console.log("Food: ", result);
-      res.send({
-        user: result,
-      });
+      res.send({ user: result });
     })
     .catch((error) => {
       console.log(error);
@@ -253,9 +410,7 @@ app.post("/OCR_result_vege", (req, res) => {
   })
     .then((result) => {
       console.log("vegeOcrResult 생성 결과 : ", result);
-      res.send({
-        result,
-      });
+      res.send({ result });
     })
     .catch((error) => {
       console.error(error);
@@ -267,18 +422,10 @@ app.post("/OCR_result_nuts", (req, res) => {
   const body = req.body;
   const { pet_id, bean, peanut, rice, flour } = body;
 
-  models.OCR_result_nuts.create({
-    pet_id,
-    bean,
-    peanut,
-    rice,
-    flour,
-  })
+  models.OCR_result_nuts.create({ pet_id, bean, peanut, rice, flour })
     .then((result) => {
       console.log("nutsOcrResult 생성 결과 : ", result);
-      res.send({
-        result,
-      });
+      res.send({ result });
     })
     .catch((error) => {
       console.error(error);
@@ -313,9 +460,7 @@ app.post("/OCR_result_seafood", (req, res) => {
   })
     .then((result) => {
       console.log("seafoodOcrResult 생성 결과 : ", result);
-      res.send({
-        result,
-      });
+      res.send({ result });
     })
     .catch((error) => {
       console.error(error);
@@ -350,9 +495,7 @@ app.post("/OCR_result_fruit", (req, res) => {
   })
     .then((result) => {
       console.log("fruitsOcrResult 생성 결과 : ", result);
-      res.send({
-        result,
-      });
+      res.send({ result });
     })
     .catch((error) => {
       console.error(error);
@@ -375,9 +518,7 @@ app.post("/OCR_result_meat", (req, res) => {
   })
     .then((result) => {
       console.log("meatOcrResult : ", result);
-      res.send({
-        result,
-      });
+      res.send({ result });
     })
     .catch((error) => {
       console.error(error);
@@ -389,9 +530,7 @@ app.get("/ocrimg", (req, res) => {
   models.Ocr.findAll()
     .then((result) => {
       console.log("ocrurl:", result);
-      res.send({
-        ocrurl: result,
-      });
+      res.send({ ocrurl: result });
     })
     .catch((error) => {
       console.log(error);
@@ -402,9 +541,7 @@ app.get("/OCR_result_meat", (req, res) => {
   models.OCR_result_meat.findAll()
     .then((result) => {
       console.log("OCR_result_meat:", result);
-      res.send({
-        OCR_result_meat: result,
-      });
+      res.send({ OCR_result_meat: result });
     })
     .catch((error) => {
       console.log(error);
@@ -416,9 +553,7 @@ app.get("/OCR_result_fruit", (req, res) => {
   models.OCR_result_fruit.findAll()
     .then((result) => {
       console.log("OCR_result_fruit:", result);
-      res.send({
-        OCR_result_fruit: result,
-      });
+      res.send({ OCR_result_fruit: result });
     })
     .catch((error) => {
       console.log(error);
@@ -430,9 +565,7 @@ app.get("/OCR_result_seafood", (req, res) => {
   models.OCR_result_seafood.findAll()
     .then((result) => {
       console.log("OCR_result_seafood:", result);
-      res.send({
-        OCR_result_seafood: result,
-      });
+      res.send({ OCR_result_seafood: result });
     })
     .catch((error) => {
       console.log(error);
@@ -444,9 +577,7 @@ app.get("/OCR_result_nuts", (req, res) => {
   models.OCR_result_nuts.findAll()
     .then((result) => {
       console.log("OCR_result_nuts:", result);
-      res.send({
-        OCR_result_nuts: result,
-      });
+      res.send({ OCR_result_nuts: result });
     })
     .catch((error) => {
       console.log(error);
@@ -458,9 +589,7 @@ app.get("/OCR_result_vege", (req, res) => {
   models.OCR_result_vege.findAll()
     .then((result) => {
       console.log("OCR_result_vege:", result);
-      res.send({
-        OCR_result_vege: result,
-      });
+      res.send({ OCR_result_vege: result });
     })
     .catch((error) => {
       console.log(error);
@@ -577,13 +706,7 @@ app.post("/ocrimg", (req, res) => {
     peanut = jsondata[1];
     rice = jsondata[2];
     flour = jsondata[3];
-    models.OCR_result_nuts.create({
-      pet_id,
-      bean,
-      peanut,
-      rice,
-      flour,
-    });
+    models.OCR_result_nuts.create({ pet_id, bean, peanut, rice, flour });
   });
   result_nuts.stderr.on("data", function (data) {
     console.log(data.toString());
@@ -630,9 +753,7 @@ app.post("/ocrimg", (req, res) => {
   })
     .then((result) => {
       console.log("상품 생성 결과 : ", result);
-      res.send({
-        result,
-      });
+      res.send({ result });
     })
     .catch((error) => {
       console.error(error);
@@ -640,22 +761,17 @@ app.post("/ocrimg", (req, res) => {
     });
 });
 
-//image라는 이름의 파일이 들어왔을때 처리해주는 로직
-//multer를 사용하게되었을 때 file정보 중 path를 post
+//image라는 이름의 파일이 들어왔을때 처리해주는 로직 multer를 사용하게되었을 때 file정보 중 path를 post
 app.post("/image", upload.single("image"), (req, res) => {
   const file = req.file;
-  res.send({
-    imageUrl: file.path,
-  });
+  res.send({ imageUrl: file.path });
 });
 
 app.get("/pet_health", (req, res) => {
   models.Pet_health.findAll()
     .then((result) => {
       console.log("Pet_Health:", result);
-      res.send({
-        pet_health: result,
-      });
+      res.send({ pet_health: result });
     })
     .catch((error) => {
       console.log(error);
@@ -704,9 +820,8 @@ app.post("/pet_health", (req, res) => {
         //고양이
         if (pet_age < 2) {
           isChild = true;
-          coeffi = 2;
-        } //자묘
-        else {
+          coeffi = 2; //자묘
+        } else {
           //성묘
           if (health_id.includes(5)) coeffi = 1; //비만
           else if (pet_neuter == "yes") coeffi = 1.2; //중성화함
@@ -718,9 +833,8 @@ app.post("/pet_health", (req, res) => {
           //소, 중형견
           if (pet_age < 1) {
             isChild = true;
-            coeffi = 2;
-          } //자견
-          else if (pet_age >= 1) {
+            coeffi = 2; //자견
+          } else if (pet_age >= 1) {
             //성견
             if (health_id.includes(5)) coeffi = 1; //비만
             else if (pet_neuter == "yes") coeffi = 1.6; //중성화함
@@ -730,9 +844,8 @@ app.post("/pet_health", (req, res) => {
           //대형견
           if (pet_age < 2) {
             isChild = true;
-            coeffi = 2;
-          } //자견
-          else if (pet_age >= 2) {
+            coeffi = 2; //자견
+          } else if (pet_age >= 2) {
             //성견
             if (health_id.includes(5)) coeffi = 1; //비만
             else if (pet_neuter == "yes") coeffi = 1.6; //중성화함
@@ -759,15 +872,10 @@ app.post("/pet_health", (req, res) => {
       });
     });
 
-  models.Pet_health.create({
-    pet_id,
-    health_id,
-  })
+  models.Pet_health.create({ pet_id, health_id })
     .then((result) => {
       console.log("반려동물 건강정보 생성 결과 : ", result);
-      res.send({
-        result,
-      });
+      res.send({ result });
     })
     .catch((error) => {
       console.error(error);
@@ -779,9 +887,7 @@ app.get("/health_problem", (req, res) => {
   models.Health_problem.findAll()
     .then((result) => {
       console.log("HEALTH_PROBLEMS:", result);
-      res.send({
-        health_problems: result,
-      });
+      res.send({ health_problems: result });
     })
     .catch((error) => {
       console.log(error);
@@ -796,14 +902,10 @@ app.post("/health_problem", (req, res) => {
     res.send("모든 필드를 입력해주세요");
   }
 
-  models.Health_problem.create({
-    health,
-  })
+  models.Health_problem.create({ health })
     .then((result) => {
       console.log("건강고민정보 생성 결과 : ", result);
-      res.send({
-        result,
-      });
+      res.send({ result });
     })
     .catch((error) => {
       console.error(error);
@@ -815,9 +917,7 @@ app.get("/user", (req, res) => {
   models.User.findAll()
     .then((result) => {
       console.log("USERS:", result);
-      res.send({
-        users: result,
-      });
+      res.send({ users: result });
     })
     .catch((error) => {
       console.log(error);
@@ -832,17 +932,10 @@ app.post("/user", (req, res) => {
     res.send("모든 필드를 입력해주세요");
   }
 
-  models.User.create({
-    name,
-    email,
-    password,
-    pet_id,
-  })
+  models.User.create({ name, email, password, pet_id })
     .then((result) => {
       console.log("유저정보 생성 결과 : ", result);
-      res.send({
-        result,
-      });
+      res.send({ result });
     })
     .catch((error) => {
       console.error(error);
@@ -854,9 +947,7 @@ app.get("/pet", (req, res) => {
   models.Pet.findAll()
     .then((result) => {
       console.log("PETS:", result);
-      res.send({
-        pets: result,
-      });
+      res.send({ pets: result });
     })
     .catch((error) => {
       console.log(error);
@@ -898,9 +989,7 @@ app.post("/pet", (req, res) => {
   })
     .then((result) => {
       console.log("반려동물정보 생성 결과 : ", result);
-      res.send({
-        result,
-      });
+      res.send({ result });
     })
     .catch((error) => {
       console.error(error);
@@ -918,9 +1007,7 @@ app.get("/allergyfood/:pet_id", (req, res) => {
     })
     .then((result) => {
       console.log("allergy_food: ", result);
-      res.send({
-        allergy_food: result,
-      });
+      res.send({ allergy_food: result });
     })
     .catch((error) => {
       console.log(error);
@@ -962,9 +1049,7 @@ app.get("/user/:id", (req, res) => {
   })
     .then((result) => {
       console.log("User: ", result);
-      res.send({
-        user: result,
-      });
+      res.send({ user: result });
     })
     .catch((error) => {
       console.log(error);
