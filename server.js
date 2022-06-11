@@ -5,6 +5,7 @@ const models = require("./models");
 const multer = require("multer");
 const { json } = require("express/lib/response");
 const { ppid } = require("process");
+const { resolve } = require("path");
 //const sequelize = require("sequelize");
 const spawn = require("child_process").spawn;
 // const Op = sequelize.Op; 엑셀파일 가져오기 const recipes =
@@ -171,6 +172,7 @@ async function showing() {
   return new Promise(function (resolve, reject) {
     var ingredient2;
     var ingredient_weight2;
+    var retItems = [];
     models.recipes_dp
       .findOne({
         where: {
@@ -200,10 +202,17 @@ async function showing() {
                 Number(ingredient_weight2 * ratio).toFixed(0) +
                 "g"
             );
+            var weight = Number(ingredient_weight2 * ratio).toFixed(0);
+
+            retItems.push({ ingredient2, weight });
           }
         }
+      })
+      .then(() => {
+        console.log(retItems);
+        resolve(retItems);
       });
-    resolve();
+    //resolve();
   });
 }
 
@@ -211,6 +220,7 @@ async function doSomething() {
   totalKcal = await recipeKcal();
   ratio = await calcRatio();
   var ret = await showing();
+  return ret;
 }
 
 app.post("/recipe/:id", (req, res) => {
@@ -220,7 +230,13 @@ app.post("/recipe/:id", (req, res) => {
   const params = req.params;
   id = params.id;
 
-  const foo = doSomething();
+  doSomething().then((foo) => {
+    console.log(foo); //foo에 레시피 재료별 재료이름, 무게 담겨있음
+    for (var i = 0; i < foo.length; i++) {
+      console.log(foo[i].ingredient2); //재료이름
+      console.log(foo[i].weight + "g"); //무게
+    }
+  });
 });
 
 app.get("/recipe/:id", (req, res) => {
