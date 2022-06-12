@@ -3,7 +3,7 @@ const cors = require("cors");
 const app = express();
 const models = require("./models");
 const multer = require("multer");
-const { json } = require("express/lib/response");
+const { json, type } = require("express/lib/response");
 const { ppid } = require("process");
 const { resolve } = require("path");
 //const sequelize = require("sequelize");
@@ -236,6 +236,7 @@ app.post("/recipe/:id", (req, res) => {
       console.log(foo[i].ingredient2); //재료이름
       console.log(foo[i].weight + "g"); //무게
     }
+    res.status(200).json(foo);
   });
 });
 
@@ -257,6 +258,18 @@ app.get("/recipe/:id", (req, res) => {
     .catch((error) => {
       console.log(error);
       res.send("레시피 조회에 에러가 발생했습니다");
+    });
+});
+
+app.get("/raw_ingredient", (req, res) => {
+  models.Raw_Ingredient.findAll()
+    .then((result) => {
+      console.log("raw_ingredient: ", result);
+      res.send({ raw: result });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("에러 발생");
     });
 });
 
@@ -623,15 +636,15 @@ app.post("/ocrimg", (req, res) => {
     vegeImageUrl,
     nutImageUrl,
   } = body;
-  const result_meat = spawn("python", ["ocr/ocr.py", meatImageUrl]);
+  const result_meat = spawn("python3", ["ocr/ocr.py", meatImageUrl]);
   result_meat.toString().replace(/\r\n/gi, "\\r\\n");
-  const result_fruit = spawn("python", ["ocr/ocr.py", fruitImageUrl]);
+  const result_fruit = spawn("python3", ["ocr/ocr.py", fruitImageUrl]);
   result_fruit.toString().replace(/\r\n/gi, "\\r\\n");
-  const result_seafood = spawn("python", ["ocr/ocr.py", fishImageUrl]);
+  const result_seafood = spawn("python3", ["ocr/ocr.py", fishImageUrl]);
   result_seafood.toString().replace(/\r\n/gi, "\\r\\n");
-  const result_vege = spawn("python", ["ocr/ocr.py", vegeImageUrl]);
+  const result_vege = spawn("python3", ["ocr/ocr.py", vegeImageUrl]);
   result_vege.toString().replace(/\r\n/gi, "\\r\\n");
-  const result_nuts = spawn("python", ["ocr/ocr.py", nutImageUrl]);
+  const result_nuts = spawn("python3", ["ocr/ocr.py", nutImageUrl]);
   result_nuts.toString().replace(/\r\n/gi, "\\r\\n");
 
   result_meat.stdout.on("data", function (data) {
