@@ -43,6 +43,237 @@ const port = 8080;
 app.use(express.json());
 app.use(cors());
 
+//몸무게 찾아서 한끼급여량 계산
+async function calcOneMeal(petId) {
+  return new Promise(function (resolve, reject) {
+    models.Pet.findOne({
+      where: {
+        pet_id: petId,
+      },
+    })
+      .then((result) => {
+        pet_age = result.pet_age;
+        pet_size = result.pet_size;
+        weight = result.pet_weight;
+        cat_or_dog = result.cat_or_dog;
+
+        if (cat_or_dog == "cat") {
+          //고양이
+          if (pet_age < 2) {
+            often = 3; //자묘
+          } else {
+            //성묘
+            often = 2;
+          }
+        } else {
+          //강아지
+          if (pet_size == "small" || pet_size == "medium") {
+            //소, 중형견
+            if (pet_age < 1) {
+              often = 3;
+            } else if (pet_age >= 1) {
+              //성견
+              often = 2;
+            }
+          } else {
+            //대형견
+            if (pet_age < 2) {
+              often = 3; //자견
+            } else if (pet_age >= 2) {
+              //성견
+              often = 2;
+            }
+          }
+        }
+
+        oneMeal = (weight * 0.03) / often;
+      })
+      .then(() => {
+        resolve(oneMeal * 1000);
+      });
+  });
+}
+
+//고기와 야채 비율 계산하기 육류는 1~174 나머지는 야채퓨레라고 하자
+async function meatAndVege(oneMeal, indexNOArr) {
+  return new Promise(function (resolve, reject) {
+    var meat = oneMeal * 0.7; //고기
+    var vege = oneMeal * 0.3; //야채
+    let meatCnt = 0;
+    let vegeCnt = 0;
+    var meatFlag = false; //고기가 하나도 선택안됐을 경우
+    var vegeFlag = false; //not고기가 하나도 선택안됐을 경우
+    for (i = 0; i < indexNOArr.length; i++) {
+      if (indexNOArr[i] >= 1 && indexNOArr[i] <= 174) {
+        meatCnt++;
+      } else {
+        vegeCnt++;
+      }
+    } //여기까지 ok
+
+    if (meatCnt == 0) {
+      meat = 0;
+      meatFlag = true;
+    } else if (meatCnt != 0) {
+      meat = meat / meatCnt; //고기 하나 당 g 수
+    }
+    if (vegeCnt == 0) {
+      vege = 0;
+      vegeFlag = true;
+    } else if (vegeCnt != 0) {
+      vege = vege / vegeCnt; //not고기 하나 당 g 수
+    }
+    //여기까지 okokok
+    var arr = [meat, vege, meatFlag, vegeFlag];
+
+    resolve(arr);
+  });
+}
+
+async function findEnergy(Id, meat, vege) {
+  return new Promise(async function (resolve, reject) {
+    var kcal;
+    models.Raw_Ingredient.findOne({
+      where: {
+        id: Id,
+      },
+    }).then((result) => {
+      models.ingredient_DB
+        .findOne({
+          where: {
+            foodDescription_KOR: result.ingredient,
+          },
+        })
+        .then((result) => {
+          if (Id >= 1 && Id <= 174) {
+            kcal = result.energy * meat;
+          } else {
+            kcal = result.energy * vege;
+          }
+        })
+        .then(() => {
+          resolve(kcal);
+        });
+    });
+  });
+}
+
+async function calcKcal(meat, vege, indexNOArr) {
+  return new Promise(async function (resolve, reject) {
+    var kcalArr = [];
+    var Id;
+
+    for (var i = 0; i < indexNOArr.length; i++) {
+      Id = indexNOArr[i];
+      var now = await findEnergy(Id, meat, vege);
+      kcalArr.push(Number(now).toFixed(0));
+    }
+    resolve(kcalArr);
+  });
+}
+
+async function findData(Id, meat, vege) {
+  return new Promise(function (resolve, reject) {
+    var ret = [];
+    models.Raw_Ingredient.findOne({
+      where: {
+        id: Id,
+      },
+    })
+      .then((result) => {
+        console.log("ing???: " + Id);
+        if (Id >= 1 && Id <= 174) {
+          ret.push(result.ingredient);
+          ret.push(meat);
+        } else {
+          ret.push(result.ingredient);
+          ret.push(vege);
+        }
+      })
+      .then(() => {
+        resolve(ret);
+      });
+  });
+}
+
+async function save(indexNOArr, meat, vege) {
+  return new Promise(async function (resolve, reject) {
+    var ingArr = [];
+    var gramArr = [];
+    var i;
+    var Id;
+    for (i = 0; i < indexNOArr.length; i++) {
+      Id = indexNOArr[i];
+      console.log("Id: " + Id);
+      var now = await findData(Id, meat, vege);
+      ingArr.push(now[0]);
+      gramArr.push(Number(now[1]).toFixed(0));
+    }
+    resolve({ ingArr, gramArr });
+  });
+}
+
+async function calcTotalKcal(kcalArr) {
+  return new Promise(function (resolve, reject) {
+    var sum = 0;
+    for (var i = 0; i < kcalArr.length; i++) {
+      sum = Number(sum) + Number(kcalArr[i]);
+    }
+    resolve(Number(sum).toFixed(0));
+  });
+}
+
+async function rawFood(petId, indexNOArr) {
+  var oneMeal = await calcOneMeal(petId);
+
+  //0:육류그램수, 1:not육류 그램수, 2:true이면육류없음, 3:true이면 not육류없음
+  var arr = await meatAndVege(oneMeal, indexNOArr);
+  var meat = arr[0],
+    vege = arr[1],
+    meatFlag = arr[2],
+    vegeFlag = arr[3];
+  var kcalArr = await calcKcal(meat, vege, indexNOArr);
+  var ret = await save(indexNOArr, meat, vege);
+  var kcalSum = await calcTotalKcal(kcalArr);
+
+  var ingArr = ret.ingArr;
+  var gramArr = ret.gramArr;
+
+  return { ingArr, gramArr, kcalArr, meatFlag, vegeFlag, kcalSum };
+}
+
+app.post("/rawFood", (req, res) => {
+  const body = req.body;
+  petId = body.pet_id;
+  indexNOArr = body.indexNOArr; //재료 index
+  console.log(petId);
+  console.log(indexNOArr);
+
+  rawFood(petId, indexNOArr).then((result) => {
+    var meatFlag = result.meatFlag; //true면 육류 선택x
+    var vegeFlag = result.vegeFlag; //true면 비육류 선택 x
+    var ingArr = result.ingArr; // 재료 이름 배열
+    var gramArr = result.gramArr; // 재료 g 배열
+    var kcalArr = result.kcalArr; // 재료 칼로리 배열
+    var kcalSum = result.kcalSum; // 생식 전체 칼로리 (배열아님)
+
+    console.log(result);
+
+    for (var i = 0; i < ingArr.length; i++) {
+      console.log(ingArr[i] + ": " + gramArr[i] + "g / " + kcalArr[i] + "kcal");
+    }
+    console.log("생식 전체 칼로리: " + kcalSum + "kcal");
+    if (meatFlag) {
+      console.log("영양 균형을 위해 육류를 재료에 포함해 주세요.");
+    }
+    if (vegeFlag) {
+      console.log("영양 균형을 위해 비육류를 재료에 포함해 주세요.");
+    }
+  });
+
+  //고기, 야채 나누기  -> 비율 계산
+});
+
 //이미지를 입력했던 경로로 보여주는 세팅
 app.use("/uploads", express.static("uploads"));
 
@@ -53,7 +284,7 @@ var db_ingredient;
 var energy;
 var tmp;
 var meal_DER;
-var ratio;
+let ratio;
 var petId;
 var id;
 //let grams = 0;
@@ -217,6 +448,7 @@ async function showing() {
 }
 
 async function doSomething() {
+  totalKcal = 0;
   totalKcal = await recipeKcal();
   ratio = await calcRatio();
   var ret = await showing();
