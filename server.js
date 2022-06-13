@@ -7,6 +7,7 @@ const { json, type } = require("express/lib/response");
 const { ppid } = require("process");
 const { resolve } = require("path");
 const { METHODS } = require("http");
+const { resolveTxt } = require("dns");
 //const sequelize = require("sequelize");
 const spawn = require("child_process").spawn;
 // const Op = sequelize.Op; 엑셀파일 가져오기 const recipes =
@@ -248,6 +249,165 @@ async function dayNeedWater(petId) {
   });
 }
 
+async function calcNutrioRatio(petId) {
+  return new Promise(function (resolve, reject) {
+    var ratio;
+    models.Pet_RER.findOne({
+      where: {
+        pet_id: petId,
+      },
+    }).then((result) => {
+      ratio = result.meal_DER / 1000;
+      resolve(ratio);
+    });
+  });
+}
+
+async function calcNutriRefer(ratio, petId) {
+  return new Promise(function (resolve, reject) {
+    var age;
+    var protein, fat, calcium, zinc, magnesium, sodium, potassium;
+    models.Pet.findOne({
+      where: {
+        pet_id: petId,
+      },
+    }).then((result) => {
+      var age = result.pet_age;
+      if (age >= 1) {
+        protein = 45 * ratio;
+        fat = 13.75 * ratio;
+        calcium = 1.25 * ratio * 1000; //g->mg
+        zinc = 18 * ratio;
+        magnesium = 0.18 * ratio * 1000;
+        sodium = 0.25 * ratio * 1000;
+        potassium = 1.25 * ratio * 1000;
+      } else {
+        protein = 62.5 * ratio;
+        fat = 21.25 * ratio;
+        calcium = 2.5 * ratio * 1000;
+        zinc = 25 * ratio;
+        magnesium = 0.1 * ratio * 1000;
+        sodium = 0.55 * ratio * 1000;
+        potassium = 1.1 * ratio * 1000;
+      }
+      protein = Number(protein).toFixed(2);
+      fat = Number(fat).toFixed(2);
+      calcium = Number(calcium).toFixed(2);
+      zinc = Number(zinc).toFixed(2);
+      magnesium = Number(magnesium).toFixed(2);
+      sodium = Number(sodium).toFixed(2);
+      potassium = Number(potassium).toFixed(2);
+      resolve({
+        protein,
+        fat,
+        calcium,
+        zinc,
+        magnesium,
+        sodium,
+        potassium,
+      });
+    });
+  });
+}
+
+async function calcNutriRealOne(ing, gram) {
+  return new Promise(function (resolve, reject) {
+    var protein, fat, calcium, ainc, magnesium, sodium, potassium;
+    models.ingredient_DB
+      .findOne({
+        foodDescription_KOR: ing,
+      })
+      .then((result) => {
+        protein = result.protein * gram;
+        fat = result.fat * gram;
+        calcium = result.calcium * gram;
+        zinc = result.zinc * gram;
+        magnesium = result.magnesium * gram;
+        sodium = result.sodium * gram;
+        potassium = result.potassium * gram;
+        resolve({ protein, fat, calcium, zinc, magnesium, sodium, potassium });
+      });
+  });
+}
+
+async function calcNutriReal(ingArr, gramArr) {
+  return new Promise(async function (resolve, reject) {
+    var proteinSum = 0,
+      fatSum = 0,
+      calciumSum = 0,
+      zincSum = 0,
+      magnesiumSum = 0,
+      sodiumSum = 0,
+      potassiumSum = 0;
+    for (var i = 0; i < ingArr.length; i++) {
+      var ing = ingArr[i];
+      var gram = gramArr[i];
+      var nutriRealOne = await calcNutriRealOne(ing, gram);
+      proteinSum += nutriRealOne.protein;
+      fatSum += nutriRealOne.fat;
+      calciumSum += nutriRealOne.calcium;
+      zincSum += nutriRealOne.zinc;
+      magnesiumSum += nutriRealOne.magnesium;
+      sodiumSum += nutriRealOne.sodium;
+      potassiumSum += nutriRealOne.potassium;
+    }
+    proteinSum = Number(proteinSum).toFixed(2);
+    fatSum = Number(fatSum).toFixed(2);
+    calciumSum = Number(calciumSum).toFixed(2);
+    zincSum = Number(zincSum).toFixed(2);
+    magnesiumSum = Number(magnesiumSum).toFixed(2);
+    sodiumSum = Number(sodiumSum).toFixed(2);
+    potassiumSum = Number(potassiumSum).toFixed(2);
+    resolve({
+      proteinSum,
+      fatSum,
+      calciumSum,
+      zincSum,
+      magnesiumSum,
+      sodiumSum,
+      potassiumSum,
+    });
+  });
+}
+
+async function calcNutriGood(nutriRefer, nutriReal) {
+  return new Promise(function (resolve, reject) {
+    var referProtein = nutriRefer.protein;
+    var referFat = nutriRefer.fat;
+    var referCalcium = nutriRefer.calcium;
+    var referZinc = nutriRefer.zinc;
+    var referMagnesium = nutriRefer.magnesium;
+    var referSodium = nutriRefer.sodium;
+    var referPotassium = nutriRefer.potassium;
+
+    var realProtein = nutriReal.proteinSum;
+    var realFat = nutriReal.fatSum;
+    var realCalcium = nutriReal.calciumSum;
+    var realZinc = nutriReal.zincSum;
+    var realMagnesium = nutriReal.magnesiumSum;
+    var realSodium = nutriReal.sodiumSum;
+    var realPotassium = nutriReal.potassiumSum;
+
+    var proteinRate = Number(realProtein / referProtein).toFixed(2);
+    var fatRate = Number(realFat / referFat).toFixed(2);
+    var calciumRate = Number(realCalcium / referCalcium).toFixed(2);
+    var zincRate = Number(realZinc / referZinc).toFixed(2);
+    var magnesiumRate = Number(realMagnesium / referMagnesium).toFixed(2);
+    var sodiumRate = Number(realSodium / referSodium).toFixed(2);
+    var potassiumRate = Number(realPotassium / referPotassium).toFixed(2);
+
+    resolve({
+      proteinRate,
+      fatRate,
+      calciumRate,
+      zincRate,
+      magnesiumRate,
+      sodiumRate,
+      potassiumRate,
+    });
+  });
+}
+
 async function rawFood(petId, indexNOArr) {
   var oneMeal = await calcOneMeal(petId);
 
@@ -266,8 +426,14 @@ async function rawFood(petId, indexNOArr) {
   var waterSum = sum[1];
   var needWater = await dayNeedWater(petId);
 
-  var ingArr = ret.ingArr;
-  var gramArr = ret.gramArr;
+  var ingArr = ret.ingArr; //재료 이름
+  var gramArr = ret.gramArr; //넣어야 할 g수
+
+  //영양성분 계산
+  var nutriRatio = await calcNutrioRatio(petId);
+  var nutriRefer = await calcNutriRefer(nutriRatio, petId); //영양소 최소 권장량
+  var nutriReal = await calcNutriReal(ingArr, gramArr); //실제 생식 영양소
+  var nutriGood = await calcNutriGood(nutriRefer, nutriReal); //비례
 
   return {
     ingArr,
@@ -279,6 +445,9 @@ async function rawFood(petId, indexNOArr) {
     kcalSum,
     waterSum,
     needWater,
+    nutriRefer,
+    nutriReal,
+    nutriGood,
   };
 }
 
@@ -292,13 +461,16 @@ app.post("/rawFood", (req, res) => {
   rawFood(petId, indexNOArr).then((result) => {
     var meatFlag = result.meatFlag; //true면 육류 선택x
     var vegeFlag = result.vegeFlag; //true면 비육류 선택 x
-    var ingArr = result.ingArr; // 재료 이름 배열
-    var gramArr = result.gramArr; // 재료 g 배열
-    var kcalArr = result.kcalArr; // 재료 칼로리 배열
-    var waterArr = result.waterArr; //재료 수분 배열
+    var ingArr = result.ingArr; // 재료 이름 배열 (ingArr[i] 이런식으로 접근해야함)
+    var gramArr = result.gramArr; // 재료 g 배열 (gramArr[i] 이런식으로 접근해야함)
+    var kcalArr = result.kcalArr; // 재료 칼로리 배열 (kcalArr[i] 이런식으로 접근)
+    var waterArr = result.waterArr; //재료 수분 배열 (waterArr[i] 접근)
     var kcalSum = result.kcalSum; // 생식 전체 칼로리 (배열아님)
-    var waterSum = result.waterSum; //생식의 전체 수분량
-    var needWater = result.needWater; //강아지 별 하루 필요 음수량
+    var waterSum = result.waterSum; //생식의 전체 수분량 (배열 아님)
+    var needWater = result.needWater; //강아지 별 하루 필요 음수량 (배열 아님)
+    var nutriRefer = result.nutriRefer; //생식 영양소 별 최소 권장량 (nutriRefer.protein 이렇게 접근)
+    var nutriReal = result.nutriReal; //실제 고른 생식 영양소 (nutriReal.proteinSum 이렇게 접근)
+    var nutriGood = result.nutriGood; //위에 두개 비례 (nutriGood.proteinRate 이렇게 접근)
 
     console.log(result);
 
@@ -323,6 +495,41 @@ app.post("/rawFood", (req, res) => {
     if (vegeFlag) {
       console.log("영양 균형을 위해 비육류를 재료에 포함해 주세요.");
     }
+
+    /*
+    영양소 단위
+    단백질:g, 지방:g, 칼슘:mg, 인:mg, 마그네슘:mg, 나트륨:mg, 칼륨:mg
+
+    nutriReal.proteinSum 이 NaN(null) 인 경우는 포함안된 것 (0이라는 것임)
+
+    */
+    console.log("단백질 최소 권장량: " + nutriRefer.protein);
+    console.log("단백질 실제 고른 생식 영양소: " + nutriReal.proteinSum);
+    console.log("단백질 비례: " + nutriGood.proteinRate);
+
+    console.log("지방 최소 권장량: " + nutriRefer.fat);
+    console.log("지방 실제 고른 생식 영양소: " + nutriReal.fatSum);
+    console.log("지방 비례: " + nutriGood.fatRate);
+
+    console.log("칼슘 최소 권장량: " + nutriRefer.calcium);
+    console.log("칼슘 실제 고른 생식 영양소: " + nutriReal.calciumSum);
+    console.log("칼슘 비례: " + nutriGood.calciumRate);
+
+    console.log("인 최소 권장량: " + nutriRefer.zinc);
+    console.log("인 실제 고른 생식 영양소: " + nutriReal.zincSum);
+    console.log("인 비례: " + nutriGood.zincRate);
+
+    console.log("마그네슘 최소 권장량: " + nutriRefer.magnesium);
+    console.log("마그네슘 실제 고른 생식 영양소: " + nutriReal.magnesiumSum);
+    console.log("마그네슘 비례: " + nutriGood.magnesiumRate);
+
+    console.log("나트륨 최소 권장량: " + nutriRefer.sodium);
+    console.log("나트륨 실제 고른 생식 영양소: " + nutriReal.sodiumSum);
+    console.log("나트륨 비례: " + nutriGood.sodiumRate);
+
+    console.log("칼륨 최소 권장량: " + nutriRefer.potassium);
+    console.log("칼륨 실제 고른 생식 영양소: " + nutriReal.potassiumSum);
+    console.log("칼륨 비례: " + nutriGood.potassiumRate);
   });
 
   //고기, 야채 나누기  -> 비율 계산
