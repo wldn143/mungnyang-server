@@ -6,6 +6,7 @@ const multer = require("multer");
 const { json, type } = require("express/lib/response");
 const { ppid } = require("process");
 const { resolve } = require("path");
+const { METHODS } = require("http");
 //const sequelize = require("sequelize");
 const spawn = require("child_process").spawn;
 // const Op = sequelize.Op; 엑셀파일 가져오기 const recipes =
@@ -132,7 +133,8 @@ async function meatAndVege(oneMeal, indexNOArr) {
 
 async function findEnergy(Id, meat, vege) {
   return new Promise(async function (resolve, reject) {
-    var kcal;
+    var kcal; //칼로리
+    var water; //수분
     models.Raw_Ingredient.findOne({
       where: {
         id: Id,
@@ -147,12 +149,17 @@ async function findEnergy(Id, meat, vege) {
         .then((result) => {
           if (Id >= 1 && Id <= 174) {
             kcal = result.energy * meat;
+            water = result.water * meat;
           } else {
             kcal = result.energy * vege;
+            water = result.water * vege;
           }
         })
         .then(() => {
-          resolve(kcal);
+          var ret = [];
+          ret.push(kcal); //0:칼로리
+          ret.push(water); //1: 수분
+          resolve(ret);
         });
     });
   });
@@ -161,14 +168,16 @@ async function findEnergy(Id, meat, vege) {
 async function calcKcal(meat, vege, indexNOArr) {
   return new Promise(async function (resolve, reject) {
     var kcalArr = [];
+    var waterArr = [];
     var Id;
 
     for (var i = 0; i < indexNOArr.length; i++) {
       Id = indexNOArr[i];
       var now = await findEnergy(Id, meat, vege);
-      kcalArr.push(Number(now).toFixed(0));
+      kcalArr.push(Number(now[0]).toFixed(0));
+      waterArr.push(Number(now[1]).toFixed(0));
     }
-    resolve(kcalArr);
+    resolve({ kcalArr, waterArr }); //칼로리배열, 수분 배열
   });
 }
 
@@ -213,13 +222,29 @@ async function save(indexNOArr, meat, vege) {
   });
 }
 
-async function calcTotalKcal(kcalArr) {
+async function calcTotalKcal(kcalArr, waterArr) {
   return new Promise(function (resolve, reject) {
-    var sum = 0;
+    var kcalSum = 0;
+    var waterSum = 0;
     for (var i = 0; i < kcalArr.length; i++) {
-      sum = Number(sum) + Number(kcalArr[i]);
+      kcalSum = Number(kcalSum) + Number(kcalArr[i]);
+      waterSum = Number(waterSum) + Number(waterArr[i]);
     }
-    resolve(Number(sum).toFixed(0));
+    var ret = [Number(kcalSum).toFixed(0), Number(waterSum).toFixed(0)];
+    resolve(ret);
+  });
+}
+
+async function dayNeedWater(petId) {
+  return new Promise(function (resolve, reject) {
+    models.Pet.findOne({
+      where: {
+        pet_id: petId,
+      },
+    }).then((result) => {
+      var ret = result.pet_weight * 65;
+      resolve(ret);
+    });
   });
 }
 
@@ -232,14 +257,29 @@ async function rawFood(petId, indexNOArr) {
     vege = arr[1],
     meatFlag = arr[2],
     vegeFlag = arr[3];
-  var kcalArr = await calcKcal(meat, vege, indexNOArr);
+  var calcKcalRet = await calcKcal(meat, vege, indexNOArr);
+  var kcalArr = calcKcalRet.kcalArr;
+  var waterArr = calcKcalRet.waterArr;
   var ret = await save(indexNOArr, meat, vege);
-  var kcalSum = await calcTotalKcal(kcalArr);
+  var sum = await calcTotalKcal(kcalArr, waterArr);
+  var kcalSum = sum[0];
+  var waterSum = sum[1];
+  var needWater = await dayNeedWater(petId);
 
   var ingArr = ret.ingArr;
   var gramArr = ret.gramArr;
 
-  return { ingArr, gramArr, kcalArr, meatFlag, vegeFlag, kcalSum };
+  return {
+    ingArr,
+    gramArr,
+    kcalArr,
+    waterArr,
+    meatFlag,
+    vegeFlag,
+    kcalSum,
+    waterSum,
+    needWater,
+  };
 }
 
 app.post("/rawFood", (req, res) => {
@@ -255,13 +295,27 @@ app.post("/rawFood", (req, res) => {
     var ingArr = result.ingArr; // 재료 이름 배열
     var gramArr = result.gramArr; // 재료 g 배열
     var kcalArr = result.kcalArr; // 재료 칼로리 배열
+    var waterArr = result.waterArr; //재료 수분 배열
     var kcalSum = result.kcalSum; // 생식 전체 칼로리 (배열아님)
+    var waterSum = result.waterSum; //생식의 전체 수분량
+    var needWater = result.needWater; //강아지 별 하루 필요 음수량
 
     console.log(result);
 
     for (var i = 0; i < ingArr.length; i++) {
       console.log(ingArr[i] + ": " + gramArr[i] + "g / " + kcalArr[i] + "kcal");
+      console.log("수분: " + waterArr[i] + "g");
     }
+    console.log(
+      "수분: " +
+        waterSum +
+        "/" +
+        needWater +
+        " (" +
+        ((Number(waterSum) / Number(needWater)) * 100).toFixed(0) +
+        "%" +
+        ")"
+    );
     console.log("생식 전체 칼로리: " + kcalSum + "kcal");
     if (meatFlag) {
       console.log("영양 균형을 위해 육류를 재료에 포함해 주세요.");
