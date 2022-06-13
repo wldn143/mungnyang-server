@@ -314,9 +314,7 @@ async function calcNutriRealOne(ing, gram) {
   return new Promise(function (resolve, reject) {
     var protein, fat, calcium, ainc, magnesium, sodium, potassium;
     models.ingredient_DB
-      .findOne({
-        foodDescription_KOR: ing,
-      })
+      .findOne({ foodDescription_KOR: ing })
       .then((result) => {
         protein = result.protein * gram;
         fat = result.fat * gram;
@@ -325,7 +323,15 @@ async function calcNutriRealOne(ing, gram) {
         magnesium = result.magnesium * gram;
         sodium = result.sodium * gram;
         potassium = result.potassium * gram;
-        resolve({ protein, fat, calcium, zinc, magnesium, sodium, potassium });
+        resolve({
+          protein,
+          fat,
+          calcium,
+          zinc,
+          magnesium,
+          sodium,
+          potassium,
+        });
       });
   });
 }
@@ -485,8 +491,7 @@ app.post("/rawFood", (req, res) => {
         needWater +
         " (" +
         ((Number(waterSum) / Number(needWater)) * 100).toFixed(0) +
-        "%" +
-        ")"
+        "%)"
     );
     console.log("생식 전체 칼로리: " + kcalSum + "kcal");
     if (meatFlag) {
@@ -751,6 +756,18 @@ app.get("/recipe/:id", (req, res) => {
     .catch((error) => {
       console.log(error);
       res.send("레시피 조회에 에러가 발생했습니다");
+    });
+});
+
+app.get("/Pet_RER", (req, res) => {
+  models.Pet_RER.findAll()
+    .then((result) => {
+      console.log("Pet_RER:", result);
+      res.send({ Pet_RER: result });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send("에러 발생");
     });
 });
 

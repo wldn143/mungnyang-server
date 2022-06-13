@@ -128,6 +128,10 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.STRING(40),
         allowNull: true,
       },
+      recipe_img: {
+        type: DataTypes.STRING(10),
+        allowNull: true,
+      },
     },
     {
       createdAt: false,
