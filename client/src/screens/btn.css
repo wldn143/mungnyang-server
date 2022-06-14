@@ -1,0 +1,74 @@
+#allergyfoodbtn {
+  cursor: pointer;
+  width: 72px;
+  height: 23px;
+  color: white;
+  background-color: #ead463;
+  border-radius: 14px;
+  font-weight: bolder;
+  margin: 0px 8px 10px 0px;
+}
+#selectedfoodbtn {
+  cursor: pointer;
+  width: 100px;
+  height: 23px;
+  color: white;
+  background-color: #ead463;
+  border-radius: 14px;
+  font-weight: bolder;
+  margin: 0px 8px 10px 0px;
+}
+#foodBtn {
+  cursor: pointer;
+  width: 150px;
+  height: 22px;
+  color: black;
+  border: #ed7567 solid 1px;
+  margin: 0px 8px 5px 0px;
+  border-radius: 5px;
+}
+#more {
+  color: black;
+  text-align: center;
+  font-size: 15px;
+  margin-top: -10px;
+}
+#Ielement {
+  height: 20px;
+  margin-bottom: 5px;
+  width: 45%;
+}
+#eleAmount {
+  font-weight: 500;
+}
+#searchbar {
+  width: 316px;
+  height: 39px;
+  background: #ffffff;
+  border: 1px solid #adacac;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 5px;
+  padding-left: 5px;
+}
+#searchbar:focus {
+  outline: none;
+}
+#searchbar::placeholder {
+  color: #bcbcbc;
+  font-size: 12px;
+}
+.list-container {
+  height: 300px;
+  overflow: scroll;
+  margin-top: 30px;
+}
+.list-container::-webkit-scrollbarbar {
+  background: rgba(255, 255, 255, 0.4);
+  width: 8px;
+  height: 8px;
+  border-radius: 6px;
+}
+.list-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+}

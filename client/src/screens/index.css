@@ -1,0 +1,71 @@
+ol,
+ul {
+  list-style: none;
+}
+img {
+  vertical-align: middle;
+  border: none;
+}
+.clearfix {
+  clear: both;
+}
+
+.slider {
+  width: 355px;
+  display: flex;
+  align-items: center;
+}
+.slide {
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.slide-container {
+  width: 300vw;
+  height: 429px;
+  display: flex;
+  transition: all 0.5s;
+}
+.slide-box {
+  width: 100vw;
+}
+.slide-next {
+  position: absolute;
+  top: 45%;
+  right: 0;
+}
+.slide-prev {
+  position: absolute;
+  top: 45%;
+  left: 0;
+}
+button {
+  border: none;
+  background-color: transparent;
+}
+
+#allergy_input {
+  width: 350px;
+  height: 150px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 30px;
+}
+
+#allergy_input_upload {
+  cursor: pointer;
+}
+#allergy_input_write {
+  cursor: pointer;
+}
+
+/*ocr업로드 페이지*/
+
+#ocr_img {
+  cursor: pointer;
+}
+#chooseFile {
+  visibility: hidden;
+}
