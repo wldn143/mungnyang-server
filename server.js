@@ -480,17 +480,10 @@ app.post("/rawFood", (req, res) => {
     var nutriGood = result.nutriGood; //위에 두개 비례 (nutriGood.proteinRate 이렇게 접근)
 
     console.log(result);
-    var iArr = [];
 
     for (var i = 0; i < ingArr.length; i++) {
       console.log(ingArr[i] + ": " + gramArr[i] + "g / " + kcalArr[i] + "kcal");
       console.log("수분: " + waterArr[i] + "g");
-      iArr.push({
-        name: ingArr[i],
-        분배량: gramArr[i],
-        칼로리: kcalArr[i],
-        수분: waterArr[i],
-      });
     }
     console.log(
       "수분: " +
@@ -501,21 +494,14 @@ app.post("/rawFood", (req, res) => {
         ((Number(waterSum) / Number(needWater)) * 100).toFixed(0) +
         "%)"
     );
-    var wArr = {
-      waterSum: waterSum,
-      needWater: needWater,
-      Wpercent: ((Number(waterSum) / Number(needWater)) * 100).toFixed(0),
-    };
-
     console.log("생식 전체 칼로리: " + kcalSum + "kcal");
-    var kArr = { kcal: kcalSum };
     if (meatFlag) {
       console.log("영양 균형을 위해 육류를 재료에 포함해 주세요.");
     }
     if (vegeFlag) {
       console.log("영양 균형을 위해 비육류를 재료에 포함해 주세요.");
     }
-    var fArr = { meatFlag: meatFlag, vegeFlag: vegeFlag };
+
     /*
     영양소 단위
     단백질:g, 지방:g, 칼슘:mg, 인:mg, 마그네슘:mg, 나트륨:mg, 칼륨:mg
@@ -526,82 +512,30 @@ app.post("/rawFood", (req, res) => {
     console.log("단백질 최소 권장량: " + nutriRefer.protein);
     console.log("단백질 실제 고른 생식 영양소: " + nutriReal.proteinSum);
     console.log("단백질 비례: " + nutriGood.proteinRate);
-    var protineArr = {
-      name: "단백질",
-      nutriRefer: nutriRefer.protein,
-      nutriReal: nutriReal.proteinSum,
-      nutriGood: nutriGood.proteinRate,
-    };
 
     console.log("지방 최소 권장량: " + nutriRefer.fat);
     console.log("지방 실제 고른 생식 영양소: " + nutriReal.fatSum);
     console.log("지방 비례: " + nutriGood.fatRate);
-    var fatArrArr = {
-      name: "지방",
-      nutriRefer: nutriRefer.fat,
-      nutriReal: nutriReal.fatSum,
-      nutriGood: nutriGood.fatRate,
-    };
 
     console.log("칼슘 최소 권장량: " + nutriRefer.calcium);
     console.log("칼슘 실제 고른 생식 영양소: " + nutriReal.calciumSum);
     console.log("칼슘 비례: " + nutriGood.calciumRate);
-    var calciumArr = {
-      name: "칼슘",
-      nutriRefer: nutriRefer.calcium,
-      nutriReal: nutriReal.calciumSum,
-      nutriGood: nutriGood.calciumRate,
-    };
 
     console.log("인 최소 권장량: " + nutriRefer.zinc);
     console.log("인 실제 고른 생식 영양소: " + nutriReal.zincSum);
     console.log("인 비례: " + nutriGood.zincRate);
-    var zincSumArr = {
-      name: "인",
-      nutriRefer: nutriRefer.zinc,
-      nutriReal: nutriReal.zincSum,
-      nutriGood: nutriGood.zincRate,
-    };
 
     console.log("마그네슘 최소 권장량: " + nutriRefer.magnesium);
     console.log("마그네슘 실제 고른 생식 영양소: " + nutriReal.magnesiumSum);
     console.log("마그네슘 비례: " + nutriGood.magnesiumRate);
-    var magnesiumSumArr = {
-      name: "마그네슘",
-      nutriRefer: nutriRefer.magnesium,
-      nutriReal: nutriReal.magnesiumSum,
-      nutriGood: nutriGood.magnesiumRate,
-    };
 
     console.log("나트륨 최소 권장량: " + nutriRefer.sodium);
     console.log("나트륨 실제 고른 생식 영양소: " + nutriReal.sodiumSum);
     console.log("나트륨 비례: " + nutriGood.sodiumRate);
-    var sodiumSumArr = {
-      name: "나트륨",
-      nutriRefer: nutriRefer.sodium,
-      nutriReal: nutriReal.sodiumSum,
-      nutriGood: nutriGood.sodiumRate,
-    };
 
     console.log("칼륨 최소 권장량: " + nutriRefer.potassium);
     console.log("칼륨 실제 고른 생식 영양소: " + nutriReal.potassiumSum);
     console.log("칼륨 비례: " + nutriGood.potassiumRate);
-    var potassiumSumArr = {
-      name: "칼륨",
-      nutriRefer: nutriRefer.potassium,
-      nutriReal: nutriReal.potassiumSum,
-      nutriGood: nutriGood.potassiumRate,
-    };
-    var nutriArr = [
-      protineArr,
-      fatArrArr,
-      calciumArr,
-      zincSumArr,
-      magnesiumSumArr,
-      sodiumSumArr,
-      potassiumSumArr,
-    ];
-    res.status(200).json([iArr, wArr, fArr, nutriArr, kArr]);
   });
 
   //고기, 야채 나누기  -> 비율 계산
@@ -873,40 +807,6 @@ app.get("/recipe", (req, res) => {
     .catch((error) => {
       console.log(error);
       res.send("에러 발생");
-    });
-});
-
-app.get("/recipe_description", (req, res) => {
-  models.recipes_ckm
-    .findAll()
-    .then((result) => {
-      console.log("recipe_description:", result);
-      res.send({ recipe_description: result });
-    })
-    .catch((error) => {
-      console.log(error);
-      res.send("에러 발생");
-    });
-});
-
-app.get("/recipe_description/:id", (req, res) => {
-  const params = req.params;
-  id = params.id;
-
-  models.recipes_ckm
-    .findOne({
-      where: {
-        indexNO: id,
-      },
-    })
-    .then((result) => {
-      //console.log("recipe: ", result);
-
-      res.send({ recipe_description: result });
-    })
-    .catch((error) => {
-      console.log(error);
-      res.send("레시피 조회에 에러가 발생했습니다");
     });
 });
 
