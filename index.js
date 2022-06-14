@@ -5,7 +5,6 @@ const models = require("./models");
 const port = process.env.PORT || 5000;
 
 app.use(express.json());
-app.use(cors());
 // const server = http.createServer(function (req, res) {
 //   const path = req.url;
 //   const method = req.method;
@@ -26,7 +25,7 @@ app.use(cors());
 //   res.end("Good Bye");
 // });
 
-server.listen(port, () => {
+app.listen(port, () => {
   console.log("success!");
 });
 
