@@ -7,7 +7,7 @@ import BackButton from "../feed/BackButton";
 import Header from "../feed/Header";
 import RecipeImg from "../../image/recipeImg.png";
 //import axios from "axios";
-import { axiosInstance } from "../../config";
+import { axiosInstance } from "../../configuring";
 import { useLocation } from "react-router-dom";
 function RawFoodRecipe() {
   const location = useLocation();

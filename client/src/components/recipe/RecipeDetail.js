@@ -7,7 +7,7 @@ import BackButton from "../feed/BackButton";
 import Header from "../feed/Header";
 import RecipeImg from "../../image/recipeImg.png";
 //import axios from "axios";
-import { axiosInstance } from "../../config";
+import { axiosInstance } from "../../configuring";
 const Minibutn = styled.button`
   width: 230px;
   height: 40px;

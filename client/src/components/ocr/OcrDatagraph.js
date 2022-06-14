@@ -7,7 +7,7 @@ import VegeContainer from "./VegeContainer";
 import NutsContainer from "./NutsContainer";
 import FruitsContainer from "./FruitsContainer";
 //import axios from "axios";
-import { axiosInstance } from "../../config";
+import { axiosInstance } from "../../configuring";
 const OcrNavBtn = styled.button`
   height: 35px;
   color: #ed7567;

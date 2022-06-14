@@ -5,7 +5,7 @@ import PinkButton from "../auth/PinkButton";
 import { useHistory } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 //import axios from "axios";
-import { axiosInstance } from "../../config";
+import { axiosInstance } from "../../configuring";
 
 const SelectedElem = styled.div`
   font-size: 13px;
