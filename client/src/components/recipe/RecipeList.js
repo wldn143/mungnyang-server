@@ -30,7 +30,7 @@ function RecipeList() {
 
   //로그인된 유저의 반려동물 정보
   useEffect(() => {
-    fetch("https://iwipwq-nest.herokuapp.com/pet")
+    fetch("https://mungnyangapp.herokuapp.com.com/pet")
       .then((response) => response.json())
       .then((json) => {
         const foundData = json.pets.find((data) => data.pet_id === petId);
@@ -50,7 +50,7 @@ function RecipeList() {
   //음식 전체 리스트
   useEffect(() => {
     if (foods.length === 0) {
-      fetch("https://iwipwq-nest.herokuapp.com/food")
+      fetch("https://mungnyangapp.herokuapp.com.com/food")
         .then((response) => response.json())
         .then((json) => {
           setfoods(json.foods);
@@ -61,7 +61,7 @@ function RecipeList() {
   //알러지 음식 확인 ID배열
   useEffect(() => {
     if (allergyId.length === 0) {
-      fetch("https://iwipwq-nest.herokuapp.com/allergyfood")
+      fetch("https://mungnyangapp.herokuapp.com.com/allergyfood")
         .then((response) => response.json())
         .then((json) => {
           const foundData = json.allergy_food.find(
@@ -91,7 +91,7 @@ function RecipeList() {
   //레시피 전체 출력
   useEffect(() => {
     if (recipe.length === 0) {
-      fetch("https://iwipwq-nest.herokuapp.com/recipe")
+      fetch("https://mungnyangapp.herokuapp.com.com/recipe")
         .then((response) => response.json())
         .then((recipe) => {
           setRecipe(recipe.recipe);

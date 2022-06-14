@@ -26,7 +26,7 @@ function OcrSelect() {
   const [filteredFoods, setFilteredFoods] = useState([]);
 
   useEffect(() => {
-    fetch("https://iwipwq-nest.herokuapp.com/food")
+    fetch("https://mungnyangapp.herokuapp.com/food")
       .then((response) => response.json())
       .then((foods) => {
         setFoods(foods.foods);
@@ -71,14 +71,14 @@ function OcrSelect() {
       pet_id: petId,
     };
     axiosInstance
-      .post("https://iwipwq-nest.herokuapp.com/allergyfood", body)
+      .post("https://mungnyangapp.herokuapp.com/allergyfood", body)
       .then((res) => {})
       .catch((error) => {
         console.log(error);
       });
 
     for (let i = 0; i < foodsArray.length; i++) {
-      fetch("https://iwipwq-nest.herokuapp.com/food")
+      fetch("https://mungnyangapp.herokuapp.com/food")
         .then((response) => response.json())
         .then((data) => {
           resultArray.push(
@@ -86,7 +86,7 @@ function OcrSelect() {
           );
 
           axiosInstance
-            .put(`https://iwipwq-nest.herokuapp.com/allergyfood/${petId}`, {
+            .put(`https://mungnyangapp.herokuapp.com/allergyfood/${petId}`, {
               allergy_food_id: resultArray,
             })
             .then(function (response) {

@@ -20,7 +20,7 @@ function RawFoodRecipe() {
 
   useEffect(() => {
     axiosInstance
-      .post("https://iwipwq-nest.herokuapp.com/rawFood", location.state.data)
+      .post("https://mungnyangapp.herokuapp.com/rawFood", location.state.data)
       .then((res) => {
         setRawInfo(res.data[3]);
         setWaterInfo(res.data[1]);

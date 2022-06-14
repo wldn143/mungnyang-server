@@ -65,7 +65,7 @@ function SignUp2() {
     sessionStorage.setItem("pet_size", size);
     sessionStorage.setItem("pet_weight", pet_weight);
 
-    fetch("https://iwipwq-nest.herokuapp.com/pet")
+    fetch("https://mungnyangapp.herokuapp.com/pet")
       .then((response) => response.json())
       .then((json) => {
         let petId;

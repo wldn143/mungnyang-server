@@ -20,7 +20,7 @@ function PetInfo() {
   const [foods, setfoods] = useState([]);
 
   useEffect(() => {
-    fetch("https://iwipwq-nest.herokuapp.com/food")
+    fetch("https://mungnyangapp.herokuapp.com/food")
       .then((response) => response.json())
       .then((data) => {
         setfoods(data.foods);
@@ -28,7 +28,7 @@ function PetInfo() {
   }, []);
 
   useEffect(() => {
-    fetch("https://iwipwq-nest.herokuapp.com/allergyfood")
+    fetch("https://mungnyangapp.herokuapp.com/allergyfood")
       .then((response) => response.json())
       .then((data) => {
         setAllergyId(data.allergy_food);
@@ -74,7 +74,7 @@ function PetInfo() {
   });
 
   useEffect(() => {
-    fetch("https://iwipwq-nest.herokuapp.com/pet")
+    fetch("https://mungnyangapp.herokuapp.com/pet")
       .then((response) => response.json())
       .then((data) => {
         setPetInfo(data.pets);

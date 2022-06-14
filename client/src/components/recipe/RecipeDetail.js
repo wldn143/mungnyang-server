@@ -35,20 +35,20 @@ function RecipeDetail() {
 
   //하루권장 섭취량
   useEffect(() => {
-    fetch(`https://iwipwq-nest.herokuapp.com/Pet_RER`)
+    fetch(`https://mungnyangapp.herokuapp.com/Pet_RER`)
       .then((response) => response.json())
       .then((json) => {
         const der = json.Pet_RER.find((data) => data.pet_id === petId);
         setDER(der.DER);
       });
-    fetch(`https://iwipwq-nest.herokuapp.com/recipe/${receivedId}`)
+    fetch(`https://mungnyangapp.herokuapp.com/recipe/${receivedId}`)
       .then((response) => response.json())
       .then((json) => {
         setRecipe(json.recipe);
       });
 
     axiosInstance
-      .post(`https://iwipwq-nest.herokuapp.com/recipe/${receivedId}`, body)
+      .post(`https://mungnyangapp.herokuapp.com/recipe/${receivedId}`, body)
       .then((res) => {
         setIngredientArray(res.data);
         console.log(res.data);

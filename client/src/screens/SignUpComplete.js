@@ -36,7 +36,7 @@ function SignUpComplete() {
     pet_weight: pet_weight,
   };
   axiosInstance
-    .post("https://iwipwq-nest.herokuapp.com/pet", pet_body)
+    .post("https://mungnyangapp.herokuapp.com/pet", pet_body)
     .then((res) => {})
     .catch((error) => {
       console.log(error);
@@ -54,11 +54,11 @@ function SignUpComplete() {
   };
 
   axiosInstance
-    .post("https://iwipwq-nest.herokuapp.com/user", user_body)
+    .post("https://mungnyangapp.herokuapp.com/user", user_body)
     .then((res) => {});
 
   axiosInstance
-    .post("https://iwipwq-nest.herokuapp.com/pet_health", h_body)
+    .post("https://mungnyangapp.herokuapp.com/pet_health", h_body)
     .then((res) => {});
 
   return (

@@ -26,7 +26,7 @@ function SelectRaw() {
   const [selectedIngredient, setSelectedIngredient] = useState([]);
 
   useEffect(() => {
-    fetch("https://iwipwq-nest.herokuapp.com/raw_ingredient")
+    fetch("https://mungnyangapp.herokuapp.com/raw_ingredient")
       .then((response) => response.json())
       .then((data) => {
         setFoods(data.raw);

@@ -84,7 +84,7 @@ function OcrDatagraph(props) {
       pet_id: petId,
     };
     axiosInstance
-      .post("https://iwipwq-nest.herokuapp.com/allergyfood", body)
+      .post("https://mungnyangapp.herokuapp.com/allergyfood", body)
       .then((res) => {})
       .catch((error) => {
         console.log(error);

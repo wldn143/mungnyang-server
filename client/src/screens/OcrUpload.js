@@ -77,7 +77,7 @@ function OcrUpload() {
     values.preventDefault();
 
     axiosInstance
-      .post("https://iwipwq-nest.herokuapp.com/ocrimg", {
+      .post("https://mungnyangapp.herokuapp.com/ocrimg", {
         pet_id: petId,
         meatImageUrl: meatImageUrl,
         fishImageUrl: fishImageUrl,
@@ -108,7 +108,7 @@ function OcrUpload() {
           <OcrContainer>
             <Upload
               name="image"
-              action={"https://iwipwq-nest.herokuapp.com/image"}
+              action={"https://mungnyangapp.herokuapp.com/image"}
               listType="picture"
               showUploadList={false}
               onChange={onChangeImage1}
@@ -116,7 +116,7 @@ function OcrUpload() {
               {meatImageUrl ? (
                 <img
                   id="upload-img"
-                  src={`https://iwipwq-nest.herokuapp.com/${meatImageUrl}`}
+                  src={`https://mungnyangapp.herokuapp.com/${meatImageUrl}`}
                   style={{ margin: "auto" }}
                   width="163"
                   height="197"
@@ -130,7 +130,7 @@ function OcrUpload() {
 
             <Upload
               name="image"
-              action={"https://iwipwq-nest.herokuapp.com/image"}
+              action={"https://mungnyangapp.herokuapp.com/image"}
               listType="picture"
               showUploadList={false}
               onChange={onChangeImage2}
@@ -138,7 +138,7 @@ function OcrUpload() {
               {fruitImageUrl ? (
                 <img
                   id="upload-img"
-                  src={`https://iwipwq-nest.herokuapp.com/${fruitImageUrl}`}
+                  src={`https://mungnyangapp.herokuapp.com/${fruitImageUrl}`}
                   style={{ margin: "auto" }}
                   width="163"
                   height="197"
@@ -153,7 +153,7 @@ function OcrUpload() {
           <OcrContainer>
             <Upload
               name="image"
-              action={"https://iwipwq-nest.herokuapp.com/image"}
+              action={"https://mungnyangapp.herokuapp.com/image"}
               listType="picture"
               showUploadList={false}
               onChange={onChangeImage3}
@@ -161,7 +161,7 @@ function OcrUpload() {
               {fishImageUrl ? (
                 <img
                   id="upload-img"
-                  src={`https://iwipwq-nest.herokuapp.com/${fishImageUrl}`}
+                  src={`https://mungnyangapp.herokuapp.com/${fishImageUrl}`}
                   style={{ margin: "auto" }}
                   width="163"
                   height="197"
@@ -174,7 +174,7 @@ function OcrUpload() {
             </Upload>
             <Upload
               name="image"
-              action={"https://iwipwq-nest.herokuapp.com/image"}
+              action={"https://mungnyangapp.herokuapp.com/image"}
               listType="picture"
               showUploadList={false}
               onChange={onChangeImage4}
@@ -182,7 +182,7 @@ function OcrUpload() {
               {vegeImageUrl ? (
                 <img
                   id="upload-img"
-                  src={`https://iwipwq-nest.herokuapp.com/${vegeImageUrl}`}
+                  src={`https://mungnyangapp.herokuapp.com/${vegeImageUrl}`}
                   style={{ margin: "auto" }}
                   width="163"
                   height="197"
@@ -197,7 +197,7 @@ function OcrUpload() {
           <OcrContainer>
             <Upload
               name="image"
-              action={"https://iwipwq-nest.herokuapp.com/image"}
+              action={"https://mungnyangapp.herokuapp.com/image"}
               listType="picture"
               showUploadList={false}
               onChange={onChangeImage5}
@@ -205,7 +205,7 @@ function OcrUpload() {
               {nutImageUrl ? (
                 <img
                   id="upload-img"
-                  src={`https://iwipwq-nest.herokuapp.com/${nutImageUrl}`}
+                  src={`https://mungnyangapp.herokuapp.com/${nutImageUrl}`}
                   style={{ margin: "auto" }}
                   width="163"
                   height="197"

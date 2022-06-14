@@ -25,7 +25,7 @@ function MeatContainer(props) {
   useEffect(() => {
     setUserMeatResult(props.userMeatResult);
     setPostAllergyFood(props.postAllergyFood);
-    axiosInstance.put(`https://iwipwq-nest.herokuapp.com/${petId}`, {
+    axiosInstance.put(`https://mungnyangapp.herokuapp.com/${petId}`, {
       allergy_food_id: postAllergyFood.allergy_food_id,
     });
   }, []);

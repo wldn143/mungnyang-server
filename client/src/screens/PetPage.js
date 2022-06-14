@@ -12,7 +12,7 @@ function PetPage() {
   const [isOcr, setIsOcr] = useState([]); //패치나 axios쓸때 얘를 써야 데이터를 꺼낼수가이쎄
   const [content, setContent] = useState();
   useEffect(() => {
-    fetch("https://iwipwq-nest.herokuapp.com/OCR_result_meat")
+    fetch("https://mungnyangapp.herokuapp.com/OCR_result_meat")
       .then((response) => response.json())
       .then((data) => {
         setIsOcr(data.OCR_result_meat);

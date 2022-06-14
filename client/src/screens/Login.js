@@ -31,7 +31,7 @@ function Login() {
   const submitHandler = (e) => {
     e.preventDefault();
 
-    fetch("https://iwipwq-nest.herokuapp.com/user")
+    fetch("https://mungnyangapp.herokuapp.com/user")
       .then((response) => response.json())
       .then((json) => {
         const foundData = json.users.find((data) => data.email === email);
