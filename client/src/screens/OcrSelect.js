@@ -7,7 +7,7 @@ import BackButton from "../components/feed/BackButton";
 import "./btn.css";
 import SubmitButton from "../components/auth/SubmitButton";
 //import axios from "axios";
-import { axiosInstance } from ".././config";
+import { axiosInstance } from "../config";
 import { useHistory } from "react-router-dom";
 const FoodListBtn = styled.button`
   width: 100px;

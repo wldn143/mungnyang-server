@@ -5,7 +5,7 @@ import AuthLayout from "../components/auth/AuthLayout";
 import Header from "../components/feed/Header";
 import "./btn.css";
 //import axios from "axios";
-import { axiosInstance } from ".././config";
+import { axiosInstance } from "../config";
 import { useHistory } from "react-router-dom";
 import comp from "../components/auth/comp";
 import MeatHw from "../components/ocr/MeatHw";
