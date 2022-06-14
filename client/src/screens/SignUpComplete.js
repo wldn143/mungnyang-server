@@ -8,7 +8,7 @@ import Footer from "../components/feed/Footer";
 import WhiteButton from "../components/auth/WhiteButton";
 import PinkButton from "../components/auth/PinkButton";
 import Logo from "../image/landing_logo.png";
-import { axiosInstance } from "../../config.js";
+import { axiosInstance } from ".././config";
 //import axios from "axios";
 
 function SignUpComplete() {

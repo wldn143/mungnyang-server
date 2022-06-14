@@ -13,7 +13,7 @@ import nutOcrImg from "../image/nutOcr.png";
 import { Upload } from "antd";
 import OcrContainer from "../components/auth/OcrContainer";
 //import axios from "axios";
-import { axiosInstance } from "../../config.js";
+import { axiosInstance } from ".././config";
 
 function OcrUpload() {
   const [meatImageUrl, setMeatImageUrl] = useState(null);
