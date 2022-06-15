@@ -10,6 +10,7 @@ const { METHODS } = require("http");
 const { resolveTxt } = require("dns");
 //const sequelize = require("sequelize");
 const spawn = require("child_process").spawn;
+var jwt = require("jsonwebtoken");
 // const Op = sequelize.Op; 엑셀파일 가져오기 const recipes =
 // xlsx.readFile("./excels/recipes_dp.xlsx"); const ingredients =
 // xlsx.readFile("./excels/ingredient_DB.xlsx"); const matching =
